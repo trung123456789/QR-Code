@@ -5,17 +5,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
+import 'package:flutter_qr_scan/Screens/Main/TaskHistoryDetail.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
 
 class TaskHistory extends StatefulWidget {
   final String title;
   final String month;
   final String taskId;
+  final String userId;
   TaskHistory({
     Key key,
     this.title,
     this.month,
     this.taskId,
+    this.userId,
   }) : super(key: key);
 
   @override
@@ -92,6 +95,9 @@ class _TaskHistoryState extends State<TaskHistory> {
   }
 
   Widget _buildTaskOnMonthItem({Map tasks}) {
+    String month = widget.month;
+    String taskId = widget.taskId;
+    String userId = widget.userId;
     String workStatus = tasks['workStatus'];
     String taskIdSub = tasks['taskId'].toString().length > 20
         ? tasks['taskId'].toString().substring(0, 20) + "..."
@@ -120,6 +126,7 @@ class _TaskHistoryState extends State<TaskHistory> {
                     ),
                     SelectableText(
                       taskIdSub,
+                      onTap: () => _taskHistoryDetail(month, taskId, tasks['taskId'], userId),
                       style: TextStyle(
                           fontSize: 20,
                           color: Theme.of(context).primaryColor,
@@ -183,6 +190,13 @@ class _TaskHistoryState extends State<TaskHistory> {
           ),
         ]
       ),
+    );
+  }
+
+  void _taskHistoryDetail(String month, String taskId, String subTaskId, String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TaskHistoryDetail(month: month, taskId: taskId, subTaskId: subTaskId, userId: userId,)),
     );
   }
 }

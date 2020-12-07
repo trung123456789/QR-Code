@@ -16,27 +16,29 @@ import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_normal_button.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:toast/toast.dart';
 
-import 'MainScreen.dart';
-
-class AddTask extends StatefulWidget {
+class EditTask extends StatefulWidget {
   final String title;
-  String userId;
+  final String userId;
+  final String month;
+  final String taskId;
+  final String subTaskId;
 
-  AddTask({
+  EditTask({
     Key key,
     this.title,
     this.userId,
+    this.month,
+    this.taskId,
+    this.subTaskId,
   }) : super(key: key);
 
   @override
-  _AddTaskState createState() => _AddTaskState();
+  _EditTaskState createState() => _EditTaskState();
 }
 
-class _AddTaskState extends State<AddTask> {
+class _EditTaskState extends State<EditTask> {
   Uint8List bytes = Uint8List(0);
   final _formKey = GlobalKey<FormState>();
   GlobalKey globalKey = new GlobalKey();
@@ -56,7 +58,7 @@ class _AddTaskState extends State<AddTask> {
       _workStatusController,
       _overTimeController;
   File _imageMachine, _imageSignature;
-  DatabaseReference _refTasks, _refMonth, _refLastTask, _refUser;
+  DatabaseReference _refTasks, _refUser;
   Reference _refStorage;
 
   @override
@@ -70,14 +72,12 @@ class _AddTaskState extends State<AddTask> {
     _workStatusController = TextEditingController();
     _overTimeController = TextEditingController();
     _refTasks = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
-    _refLastTask =
-        FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
-    _refMonth = FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
     _refUser = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
     _refStorage = FirebaseStorage.instance.ref();
     formattedMonth = formatterMonth.format(now);
     formattedDate = formatterDate.format(now);
     epochTime = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
+    initialValue(widget.month, widget.taskId, widget.subTaskId);
   }
 
   _imgFromCamera(int type) async {
@@ -152,17 +152,31 @@ class _AddTaskState extends State<AddTask> {
         });
   }
 
+  Future<void> initialValue(String month, String taskId, String subTaskId) async {
+    await _refTasks.child(month).child(taskId).child(subTaskId).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+        setState(() {
+          _taskIdController.text = values['taskId'];
+          _labNameController.text = values['labName'];
+          _typeController.text = values['type'];
+          _descriptionController.text = values['description'];
+          _placeController.text = values['place'];
+          _workStatusController.text = values['workStatus'];
+          _overTimeController.text = values['overTime'];
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
     Size size = MediaQuery.of(context).size;
-    final bodyHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         title: Center(
             child: Text(
-          "Add Task",
+          "Edit Task",
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
         )),
@@ -295,7 +309,7 @@ class _AddTaskState extends State<AddTask> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: RoundedButton(
-                  text: "Add Task",
+                  text: "Save",
                   press: () {
                     if (_formKey.currentState.validate()) {
                       saveTask(userId);
@@ -318,8 +332,7 @@ class _AddTaskState extends State<AddTask> {
     String overTime = _overTimeController.text;
 
     var sort = int.parse(epochTime) * -1;
-    int monthSize = 0;
-    int taskSize = 0;
+
     String userName;
     var childId = taskId + "-" + epochTime;
     DatabaseReference _refTaskUpdate =
@@ -352,42 +365,6 @@ class _AddTaskState extends State<AddTask> {
     // Added task
     _refTasks.child(formattedMonth).child(taskId).child(childId).set(task);
 
-    _refTasks
-        .child(formattedMonth)
-        .child(taskId)
-        .once()
-        .then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        taskSize += 1;
-      });
-
-      Map<String, String> lastTask = {
-        'taskId': taskId,
-        'labName': labName,
-        'technicianName': userName,
-        'date': formattedDate,
-        'sort': sort.toString(),
-        'taskSize': taskSize.toString() + TASK_CONTENT,
-      };
-
-      // Added last task
-      _refLastTask.child(formattedMonth).child(taskId).set(lastTask);
-
-      // Update technician name
-      _refTaskUpdate.child('technicianName').set(userName);
-    });
-
-    _refTasks.child(formattedMonth).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        monthSize += value.length;
-      });
-      Map<String, String> month = {
-        'month': formattedMonth,
-        'taskSize': monthSize.toString() + TASK_CONTENT,
-        'sort': sort.toString(),
-      };
       if (_imageMachine != null) {
         _uploadFile(
             childId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
@@ -396,34 +373,7 @@ class _AddTaskState extends State<AddTask> {
         _uploadFile(
             childId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
       }
-      Toast.show("Added new task!", context,
+      Toast.show("Edited task!", context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
-
-      String inputCode = QR_MATCH_CODE + SLASH + formattedMonth + SLASH + taskId;
-
-      _generateBarCode(taskId, inputCode);
-
-      // ImageGallerySaver.saveImage(this.bytes);
-
-      // Added month
-      _refMonth.child(formattedMonth).set(month).then((value) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) {
-            return MainScreen(
-              userId: userId,
-            );
-          }),
-        );
-      });
-    });
-  }
-
-  Future _generateBarCode(String taskId, String inputCode) async {
-    Uint8List result = await scanner.generateBarCode(inputCode);
-    final directory = await getExternalStorageDirectory(); // 1
-    final pathOfTheFileToWrite = directory.path + "/$taskId.png";
-    File file = File(pathOfTheFileToWrite);
-    file.writeAsBytes(result);
   }
 }

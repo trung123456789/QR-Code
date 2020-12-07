@@ -8,7 +8,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:391454212378:android:2f44844da3f5b305a92ca3",
+        "mobilesdk_app_id": "1:391454212378:android:41bb8f18624edd2fa92ca3",
         "android_client_info": {
           "package_name": "com.bqtrung.flutter_qr_scan"
         }

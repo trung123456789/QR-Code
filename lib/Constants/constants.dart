@@ -14,3 +14,10 @@ const USER_INFO_FIREBASE = 'UserInfo';
 const LOGIN_CHECK = 'LOGIN';
 
 const TASK_CONTENT = ' tasks';
+
+const IMAGE_SIGNATURE_FIELD = "ImageSignature";
+const IMAGE_MACHINE_FIELD = "ImageMachine";
+const QR_MATCH_CODE = "135d3a0610a636dbadecc69ba3519541";
+const SLASH = "/";
+
+const ADMIN_TYPE = "Admin";

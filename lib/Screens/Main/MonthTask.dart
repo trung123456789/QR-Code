@@ -12,10 +12,12 @@ import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
 class MonthTask extends StatefulWidget {
   final String title;
   final String month;
+  final String userId;
   MonthTask({
     Key key,
     this.title,
-    this.month
+    this.month,
+    this.userId
   }) : super(key: key);
 
   @override
@@ -36,6 +38,7 @@ class _MonthTaskState extends State<MonthTask> {
   @override
   Widget build(BuildContext context) {
     String month = widget.month;
+    String userId = widget.userId;
     String title = "Month $month";
 
     Query query = _ref.child(month);
@@ -85,14 +88,14 @@ class _MonthTaskState extends State<MonthTask> {
           itemBuilder: (BuildContext context, DataSnapshot snapshot,
               Animation<double> animation, int index) {
             Map tasks = snapshot.value;
-            return _buildTaskOnMonthItem(tasks: tasks, month: month);
+            return _buildTaskOnMonthItem(tasks: tasks, month: month, userId: userId);
           },
         ),
       ),
     );
   }
 
-  Widget _buildTaskOnMonthItem({Map tasks, String month}) {
+  Widget _buildTaskOnMonthItem({Map tasks, String month, String userId}) {
     String taskIdSub = tasks['taskId'].toString().length > 20
         ? tasks['taskId'].toString().substring(0, 20) + "..."
         : tasks['taskId'].toString();
@@ -120,7 +123,7 @@ class _MonthTaskState extends State<MonthTask> {
                     ),
                     SelectableText(
                       taskIdSub,
-                      onTap: () => _taskHistory(month, tasks['taskId']),
+                      onTap: () => _taskHistory(month, tasks['taskId'], userId),
                       style: TextStyle(
                           fontSize: 25,
                           color: Theme.of(context).primaryColor,
@@ -170,10 +173,10 @@ class _MonthTaskState extends State<MonthTask> {
     );
   }
 
-  void _taskHistory(String month, String taskId) {
+  void _taskHistory(String month, String taskId, String userId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId,)),
+      MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId, userId: userId,)),
     );
   }
 }

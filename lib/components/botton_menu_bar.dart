@@ -1,4 +1,6 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Main/AddTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/AllTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/PersonalTask.dart';
@@ -14,7 +16,6 @@ class BottonMenuBar extends StatefulWidget {
     this.userId,
   }) : super(key: key);
 
-
   @override
   State<StatefulWidget> createState() {
     return _BottonMenuBarState();
@@ -26,12 +27,27 @@ class _BottonMenuBarState extends State<BottonMenuBar> {
 
   @override
   Widget build(BuildContext context) {
+    final String userId = widget.userId;
+
     final List<Widget> _children = [
-      AllTask(title: 'All Task'),
-      PersonalTask(title: 'Personal Task'),
-      AddTask(title: 'Add Task', userId: widget.userId,),
-      UserManage(title: 'User'),
+      AllTask(
+        title: 'All Task',
+        userId: userId,
+      ),
+      PersonalTask(
+        title: 'Personal Task',
+        userId: userId,
+      ),
+      AddTask(
+        title: 'Add Task',
+        userId: userId,
+      ),
+      UserManage(
+        title: 'User',
+        userId: userId,
+      ),
     ];
+
     return Scaffold(
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -49,12 +65,10 @@ class _BottonMenuBarState extends State<BottonMenuBar> {
             title: Text('Personal Task'),
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.playlist_add_rounded),
-              title: Text('Add task')
-          ),
+              icon: Icon(Icons.playlist_add_rounded), title: Text('Add task')),
           BottomNavigationBarItem(
-              icon: Icon(Icons.portrait_rounded),
-              title: Text('Users'),
+            icon: Icon(Icons.portrait_rounded),
+            title: Text('Users'),
           )
         ],
       ),

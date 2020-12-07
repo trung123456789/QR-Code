@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Main/MainScreen.dart';
+import 'package:flutter_qr_scan/Screens/Main/TaskHistory.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/DetailQR/detail_qr_screen.dart';
 import 'package:flutter_qr_scan/components/back_to_home.dart';
 import 'package:flutter_qr_scan/components/rounded_pink_button.dart';
@@ -76,10 +77,15 @@ class ScanMain extends StatelessWidget {
 
   Future _scan(BuildContext context) async {
     String barcode = await scanner.scan();
-    if (barcode == "wonderwoman") {
+    var infoQr = barcode.split(SLASH);
+    String hashCode = infoQr[0];
+    String month = infoQr[1];
+    String taskId = infoQr[2];
+
+    if (hashCode == QR_MATCH_CODE) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => DetailQRScreen()),
+        MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId,)),
       );
     }
   }

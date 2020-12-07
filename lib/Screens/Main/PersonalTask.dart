@@ -4,11 +4,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
+import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
 
 class PersonalTask extends StatefulWidget {
-  PersonalTask({Key key, this.title}) : super(key: key);
-
   final String title;
+  final String userId;
+
+  PersonalTask({
+    Key key,
+    this.title,
+    this.userId,
+
+  }) : super(key: key);
 
   @override
   _PersonalTaskState createState() => _PersonalTaskState();
@@ -30,12 +37,27 @@ class _PersonalTaskState extends State<PersonalTask> {
 
   @override
   Widget build(BuildContext context) {
+    String userId = widget.userId;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         title: Center(child: Text("Personal Task",style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
         actions: <Widget>[
-          Icon(Icons.qr_code),
+          Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: Icon(
+                  Icons.qr_code,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ScanMain(userId: userId,)),
+                  );
+                },
+              );
+            },
+          ),
         ],
         elevation: 50.0,
         brightness: Brightness.dark,

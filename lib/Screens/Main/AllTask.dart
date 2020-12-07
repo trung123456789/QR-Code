@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -8,11 +9,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Main/MonthTask.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sprintf/sprintf.dart';
+import 'package:toast/toast.dart';
 
 class AllTask extends StatefulWidget {
   final String title;
+  final String userId;
 
-  AllTask({Key key, this.title}) : super(key: key);
+  AllTask({
+    Key key,
+    this.title,
+    this.userId,
+  }) : super(key: key);
 
   @override
   _AllTaskState createState() => _AllTaskState();
@@ -34,10 +43,11 @@ class _AllTaskState extends State<AllTask> {
 
   @override
   Widget build(BuildContext context) {
+    String userId = widget.userId;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: Center(child: Text("Personal Task",style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
+        title: Center(child: Text("All Task",style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
         actions: <Widget>[
           Builder(
             builder: (BuildContext context) {
@@ -48,10 +58,9 @@ class _AllTaskState extends State<AllTask> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ScanMain()),
+                    MaterialPageRoute(builder: (context) => ScanMain(userId: userId,)),
                   );
                 },
-                tooltip: "Back",
               );
             },
           ),
@@ -66,14 +75,14 @@ class _AllTaskState extends State<AllTask> {
           itemBuilder: (BuildContext context, DataSnapshot snapshot,
               Animation<double> animation, int index) {
             Map monthTask = snapshot.value;
-            return _buildMonthInfoItem(monthTask: monthTask);
+            return _buildMonthInfoItem(monthTask: monthTask, userId: userId);
           },
         ),
       ),
     );
   }
 
-  Widget _buildMonthInfoItem({Map monthTask}) {
+  Widget _buildMonthInfoItem({Map monthTask, String userId}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
@@ -98,7 +107,7 @@ class _AllTaskState extends State<AllTask> {
                     ),
                     SelectableText(
                       monthTask['month'],
-                      onTap: () => _monthTask(monthTask['month']),
+                      onTap: () => _monthTask(monthTask['month'], userId),
                       style: TextStyle(
                           fontSize: 18,
                           color: Theme.of(context).primaryColor,
@@ -127,20 +136,91 @@ class _AllTaskState extends State<AllTask> {
             ),
           ),
           /*3*/
-          Icon(
-            Icons.download_rounded,
-            color: Colors.red[500],
-            size: 40,
+          Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: Icon(
+                  Icons.download_rounded,
+                  color: Colors.red[500],
+                  size: 40,
+                ),
+                onPressed: () {
+                  _showMaterialDialog(monthTask['month']);
+                },
+                tooltip: "Back",
+              );
+            },
           ),
         ]
       ),
     );
   }
 
-  void _monthTask(String month) {
+  _showMaterialDialog(String month) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => new AlertDialog(
+          title: Text('Export confirm?'),
+          content: Text('Do you want export data?'),
+          actions: [
+            FlatButton(
+              textColor: Color(0xFF6200EE),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('CANCEL'),
+            ),
+            FlatButton(
+              textColor: Color(0xFF6200EE),
+              onPressed: () {
+                _exportToCsv(month);
+                Navigator.pop(context);
+
+              },
+              child: Text('ACCEPT'),
+            ),
+          ],
+        ));
+  }
+
+  void _monthTask(String month, String userId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MonthTask(month: month,)),
+      MaterialPageRoute(builder: (context) => MonthTask(month: month,userId: userId,)),
     );
+  }
+
+  void _exportToCsv(String month) async {
+    log('month: $month');
+    String header = "Technician Name,Task ID,Place,Lab Name,Description,Type,Work Status,Over Time,Date\n";
+    List<String> csvDataList = List<String>();
+    csvDataList.add(header);
+    DatabaseReference _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE).child(month);
+    final directory = await getExternalStorageDirectory();
+
+    _ref.once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        value.forEach((k, v) {
+          String date = v['date'];
+          String workStatus = v['workStatus'];
+          String technicianName = v['technicianName'];
+          String overTime = v['overTime'];
+          String description = v['description'];
+          String labName = v['labName'];
+          String place = v['place'];
+          String type = v['type'];
+          String taskId = v['taskId'];
+
+          String record = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s\n", [technicianName, taskId, place, labName, description, type, workStatus, overTime, date]);
+          csvDataList.add(record);
+        });
+      });
+      /// Write to a file
+      final pathOfTheFileToWrite = directory.path + "/$month.csv";
+      File file = File(pathOfTheFileToWrite);
+      file.writeAsString(csvDataList.join(''));
+    });
+    Toast.show("Exported to CSV!", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
   }
 }

@@ -10,6 +10,9 @@ import 'package:flutter_qr_scan/components/have_not_an_account_acheck.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_input_field.dart';
 import 'package:flutter_qr_scan/components/rounded_password_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../login_screen.dart';
 
 class Body extends StatefulWidget {
   final String title;
@@ -34,7 +37,6 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    String userId = widget.userId;
     Size size = MediaQuery.of(context).size;
     return Background(
       child: SingleChildScrollView(
@@ -71,7 +73,7 @@ class _BodyState extends State<Body> {
             RoundedButton(
               text: "LOGIN",
               press: () {
-                goToMainScreen(userId);
+                goToMainScreen();
               },
             ),
             SizedBox(height: size.height * 0.03),
@@ -95,13 +97,19 @@ class _BodyState extends State<Body> {
     );
   }
 
-  void goToMainScreen(String userId) {
+  Future<void> setAuthority(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs?.setString("userId", userId);
+  }
+
+  void goToMainScreen() {
     String yourId = _yourIDController.text;
     String yourPassword = _yourPasswordController.text;
 
     _refUserInfo.child(yourId).once().then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       if (values != null && values['yourPassword'] == yourPassword) {
+        setAuthority(yourId);
         setState(() {
           visibility = false;
         });

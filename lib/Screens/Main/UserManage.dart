@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -8,11 +7,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Auth/SignUp/signup_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserManage extends StatefulWidget {
-  UserManage({Key key, this.title}) : super(key: key);
-
+  final userId;
   final String title;
+  UserManage({
+    Key key,
+    this.title,
+    this.userId,
+  }) : super(key: key);
 
   @override
   UserManageState createState() => UserManageState();
@@ -20,12 +24,16 @@ class UserManage extends StatefulWidget {
 
 class UserManageState extends State<UserManage> {
   Query _ref;
+  DatabaseReference _refUserInfo =
+      FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
+  bool adminAuth = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _ref = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
+    checkAuthority(widget.userId);
   }
 
   @override
@@ -40,6 +48,7 @@ class UserManageState extends State<UserManage> {
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
         )),
         actions: <Widget>[
+          adminAuth ?
           IconButton(
             icon: Icon(Icons.person_add_alt_1_rounded),
             tooltip: "Add user",
@@ -49,7 +58,12 @@ class UserManageState extends State<UserManage> {
                 MaterialPageRoute(builder: (context) => SignUpScreen()),
               );
             },
-          )
+          ) : IconButton(
+            icon: Icon(Icons.person_add_disabled_sharp),
+            tooltip: "Add user",
+            onPressed: () {
+            },
+          ),
         ],
         elevation: 50.0,
         leading: Builder(
@@ -94,6 +108,7 @@ class UserManageState extends State<UserManage> {
                 FlatButton(
                   textColor: Color(0xFF6200EE),
                   onPressed: () {
+                    deleteLoggedIn();
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -157,6 +172,7 @@ class UserManageState extends State<UserManage> {
           ),
         ),
         /*3*/
+        adminAuth ?
         IconButton(
           icon: new Icon(
             Icons.do_disturb_on_rounded,
@@ -167,7 +183,7 @@ class UserManageState extends State<UserManage> {
           onPressed: () {
             _showDeleteConfirmDialog(userInfo['yourId']);
           },
-        ),
+        ) : new Container(),
       ]),
     );
   }
@@ -181,6 +197,22 @@ class UserManageState extends State<UserManage> {
           .child(id)
           .remove();
     }
+  }
+
+
+  Future<void> checkAuthority(String userId) async {
+    await _refUserInfo.child(userId).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      if (values != null && values['userType'] == ADMIN_TYPE) {
+        setState(() {
+          adminAuth = true;
+        });
+      } else {
+        setState(() {
+          adminAuth = false;
+        });
+      }
+    });
   }
 
   _showDeleteConfirmDialog(String id) {
@@ -209,7 +241,8 @@ class UserManageState extends State<UserManage> {
         ));
   }
 
-  final RegExp phoneRegex = new RegExp(r'^[6-9]\d{9}$');
-  final RegExp emailRegex = new RegExp(
-      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$");
+  Future<void> deleteLoggedIn() async {
+    SharedPreferences prefrences = await SharedPreferences.getInstance();
+    prefrences.remove("userId");
+  }
 }

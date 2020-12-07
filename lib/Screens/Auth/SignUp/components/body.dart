@@ -1,11 +1,12 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
-import 'package:flutter_qr_scan/Screens/Auth/Signup/components/background.dart';
 import 'package:flutter_qr_scan/components/already_have_an_account_acheck.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_input_field.dart';
 import 'package:flutter_qr_scan/components/rounded_password_field.dart';
+
+import 'background.dart';
 
 class Body extends StatefulWidget {
   final String title;
@@ -30,69 +31,70 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Form(
-      key: _formKey,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "SIGNUP",
-              style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.deepPurple,
-                  fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: size.height * 0.03),
-            RoundedInputField(
-              required: true,
-              controller: _yourNameController,
-              hintText: "Your Name",
-              icon: Icons.account_circle_outlined,
-              onChanged: (value) {},
-            ),
-            RoundedInputField(
-              required: true,
-              controller: _yourIDController,
-              hintText: "Your ID",
-              icon: Icons.badge,
-              onChanged: (value) {},
-            ),
-            RoundedInputField(
-              required: false,
-              controller: _yourPhoneController,
-              hintText: "Phone number",
-              icon: Icons.contact_phone_outlined,
-              onChanged: (value) {},
-            ),
-            RoundedPasswordField(
-              required: true,
-              controller: _yourPasswordController,
-              onChanged: (value) {},
-            ),
-            _buildSignupItem(),
-            SizedBox(height: size.height * 0.03),
-            RoundedButton(
-              text: "SIGNUP",
-              press: () {
-                if (_formKey.currentState.validate()) {
-                  // If the form is valid, display a Snackbar.
-                  Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('Processing Data')));
-                  saveUser();
+    return Background(
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                "SIGNUP",
+                style: TextStyle(
+                    fontSize: 25,
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: size.height * 0.03),
+              RoundedInputField(
+                required: true,
+                controller: _yourNameController,
+                hintText: "Your Name",
+                icon: Icons.account_circle_outlined,
+                onChanged: (value) {},
+              ),
+              RoundedInputField(
+                required: true,
+                controller: _yourIDController,
+                hintText: "Your ID",
+                icon: Icons.badge,
+                onChanged: (value) {},
+              ),
+              RoundedInputField(
+                required: false,
+                controller: _yourPhoneController,
+                hintText: "Phone number",
+                icon: Icons.contact_phone_outlined,
+                onChanged: (value) {},
+              ),
+              RoundedPasswordField(
+                required: true,
+                controller: _yourPasswordController,
+                onChanged: (value) {},
+              ),
+              _buildSignupItem(),
+              SizedBox(height: size.height * 0.03),
+              RoundedButton(
+                text: "SIGNUP",
+                press: () {
+                  if (_formKey.currentState.validate()) {
+                    // If the form is valid, display a Snackbar.
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('Processing Data')));
+                    saveUser();
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              SizedBox(height: size.height * 0.03),
+              AlreadyHaveAnAccountCheck(
+                login: false,
+                press: () {
                   Navigator.pop(context);
-                }
-              },
-            ),
-            SizedBox(height: size.height * 0.03),
-            AlreadyHaveAnAccountCheck(
-              login: false,
-              press: () {
-                Navigator.pop(context);
-              },
-            ),
-            SizedBox(height: size.height * 0.03),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
