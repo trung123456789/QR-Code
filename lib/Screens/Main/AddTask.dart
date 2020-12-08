@@ -56,7 +56,7 @@ class _AddTaskState extends State<AddTask> {
       _workStatusController,
       _overTimeController;
   File _imageMachine, _imageSignature;
-  DatabaseReference _refTasks, _refMonth, _refLastTask, _refUser;
+  DatabaseReference _refTasks, _refMonth, _refLastTask, _refUser, _refPersonal;
   Reference _refStorage;
 
   @override
@@ -74,6 +74,7 @@ class _AddTaskState extends State<AddTask> {
         FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
     _refMonth = FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
     _refUser = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
+    _refPersonal = FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
     _refStorage = FirebaseStorage.instance.ref();
     formattedMonth = formatterMonth.format(now);
     formattedDate = formatterDate.format(now);
@@ -156,10 +157,9 @@ class _AddTaskState extends State<AddTask> {
   Widget build(BuildContext context) {
     String userId = widget.userId;
     Size size = MediaQuery.of(context).size;
-    final bodyHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: kPrimaryColor,
         title: Center(
             child: Text(
           "Add Task",
@@ -254,7 +254,7 @@ class _AddTaskState extends State<AddTask> {
                       Text(
                         "MACHINE IMAGE",
                         style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.3),
@@ -269,7 +269,7 @@ class _AddTaskState extends State<AddTask> {
                       Text(
                         "SIGNATURE IMAGE",
                         style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.3),
@@ -396,6 +396,13 @@ class _AddTaskState extends State<AddTask> {
         _uploadFile(
             childId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
       }
+      String personalContent = [formattedMonth, taskId, childId].join(SLASH);
+      Map<String, String> personalInfo = {
+        'PersonalInfo': personalContent,
+      };
+
+      _refPersonal.child(userId).child(childId).set(personalInfo);
+
       Toast.show("Added new task!", context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
 

@@ -20,7 +20,7 @@ class RoundedNormalButton extends StatelessWidget {
       child: Center(
         child: Ink(
           decoration: const ShapeDecoration(
-            color: Colors.deepPurple,
+            color: kPrimaryColor,
             shape: CircleBorder(),
           ),
           child: IconButton(

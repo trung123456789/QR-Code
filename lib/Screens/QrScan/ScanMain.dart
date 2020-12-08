@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Main/MainScreen.dart';
 import 'package:flutter_qr_scan/Screens/Main/TaskHistory.dart';
-import 'package:flutter_qr_scan/Screens/QrScan/DetailQR/detail_qr_screen.dart';
 import 'package:flutter_qr_scan/components/back_to_home.dart';
 import 'package:flutter_qr_scan/components/rounded_pink_button.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -62,7 +60,7 @@ class ScanMain extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) {
-                        return text == LOGIN_CHECK ? LoginScreen() : MainScreen();
+                        return text == LOGIN_CHECK ? LoginScreen() : MainScreen(userId: userId,);
                       },
                     ),
                   );
@@ -85,7 +83,7 @@ class ScanMain extends StatelessWidget {
     if (hashCode == QR_MATCH_CODE) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId,)),
+        MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId, userId: userId,)),
       );
     }
   }

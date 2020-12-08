@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Models/TaskInfo.dart';
 import 'package:flutter_qr_scan/components/circle_image_container.dart';
+import 'package:flutter_qr_scan/components/circle_image_container_firebase.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_normal_button.dart';
 import 'package:image_picker/image_picker.dart';
@@ -49,6 +50,7 @@ class _EditTaskState extends State<EditTask> {
   String formattedMonth;
   String formattedDate;
   var epochTime;
+  String userName;
 
   TextEditingController _taskIdController,
       _labNameController,
@@ -58,6 +60,8 @@ class _EditTaskState extends State<EditTask> {
       _workStatusController,
       _overTimeController;
   File _imageMachine, _imageSignature;
+  String machineImage = "No Image";
+  String signatureImage = "No Image";
   DatabaseReference _refTasks, _refUser;
   Reference _refStorage;
 
@@ -78,6 +82,7 @@ class _EditTaskState extends State<EditTask> {
     formattedDate = formatterDate.format(now);
     epochTime = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
     initialValue(widget.month, widget.taskId, widget.subTaskId);
+    getUserName(widget.userId);
   }
 
   _imgFromCamera(int type) async {
@@ -112,7 +117,7 @@ class _EditTaskState extends State<EditTask> {
               content: Text('Chose image from?'),
               actions: [
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     _imgFromCamera(type);
                     Navigator.of(context, rootNavigator: true).pop();
@@ -120,7 +125,7 @@ class _EditTaskState extends State<EditTask> {
                   child: Text('Camera'),
                 ),
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     _imgFromGallery(type);
                     Navigator.of(context, rootNavigator: true).pop();
@@ -152,28 +157,40 @@ class _EditTaskState extends State<EditTask> {
         });
   }
 
-  Future<void> initialValue(String month, String taskId, String subTaskId) async {
-    await _refTasks.child(month).child(taskId).child(subTaskId).once().then((DataSnapshot snapshot) {
+  Future<void> initialValue(
+      String month, String taskId, String subTaskId) async {
+    await _refTasks
+        .child(month)
+        .child(taskId)
+        .child(subTaskId)
+        .once()
+        .then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
-        setState(() {
-          _taskIdController.text = values['taskId'];
-          _labNameController.text = values['labName'];
-          _typeController.text = values['type'];
-          _descriptionController.text = values['description'];
-          _placeController.text = values['place'];
-          _workStatusController.text = values['workStatus'];
-          _overTimeController.text = values['overTime'];
-        });
+      setState(() {
+        _taskIdController.text = values['taskId'];
+        _labNameController.text = values['labName'];
+        _typeController.text = values['type'];
+        _descriptionController.text = values['description'];
+        _placeController.text = values['place'];
+        _workStatusController.text = values['workStatus'];
+        _overTimeController.text = values['overTime'];
+        machineImage = values['machineImage'];
+        signatureImage = values['signatureImage'];
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
+    String month = widget.month;
+    String taskId = widget.taskId;
+    String subTaskId = widget.subTaskId;
+
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: kPrimaryColor,
         title: Center(
             child: Text(
           "Edit Task",
@@ -189,6 +206,7 @@ class _EditTaskState extends State<EditTask> {
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24),
             children: <Widget>[
               TextFormField(
+                enabled: false,
                 controller: _taskIdController,
                 decoration: const InputDecoration(
                     icon: const Icon(Icons.perm_identity),
@@ -268,7 +286,7 @@ class _EditTaskState extends State<EditTask> {
                       Text(
                         "MACHINE IMAGE",
                         style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.3),
@@ -283,7 +301,7 @@ class _EditTaskState extends State<EditTask> {
                       Text(
                         "SIGNATURE IMAGE",
                         style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.3),
@@ -299,9 +317,19 @@ class _EditTaskState extends State<EditTask> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      CircularImage(_imageMachine),
+                      (_imageMachine != null || machineImage == "No Image")
+                          ? CircularImage(_imageMachine)
+                          : Container(
+                              width: 200.0,
+                              child: CircularImageFirebase(machineImage),
+                            ),
                       SizedBox(height: size.height * 0.03),
-                      CircularImage(_imageSignature),
+                      (_imageSignature != null || signatureImage == "No Image")
+                          ? CircularImage(_imageSignature)
+                          : Container(
+                              width: 200.0,
+                              child: CircularImageFirebase(signatureImage),
+                            ),
                     ],
                   ),
                 ],
@@ -312,7 +340,8 @@ class _EditTaskState extends State<EditTask> {
                   text: "Save",
                   press: () {
                     if (_formKey.currentState.validate()) {
-                      saveTask(userId);
+                      saveTask(userId, taskId, subTaskId, month);
+                      Navigator.pop(context);
                     }
                   },
                 ),
@@ -322,8 +351,20 @@ class _EditTaskState extends State<EditTask> {
     );
   }
 
-  void saveTask(String userId) {
-    String taskId = _taskIdController.text;
+  Future<String> getUserName(String userId) async {
+    await _refUser.child(userId).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        if (key == "yourName") {
+          setState(() {
+            userName = value;
+          });
+        }
+      });
+    });
+  }
+
+  void saveTask(String userId, String taskId, String subTaskId, String month) {
     String labName = _labNameController.text;
     String type = _typeController.text;
     String description = _descriptionController.text;
@@ -333,22 +374,11 @@ class _EditTaskState extends State<EditTask> {
 
     var sort = int.parse(epochTime) * -1;
 
-    String userName;
-    var childId = taskId + "-" + epochTime;
     DatabaseReference _refTaskUpdate =
-        _refTasks.child(formattedMonth).child(taskId).child(childId);
-
-    _refUser.child(userId).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        if (key == "yourName") {
-          userName = value;
-        }
-      });
-    });
+        _refTasks.child(month).child(taskId).child(subTaskId);
 
     Map<String, String> task = {
-      'taskId': childId,
+      'taskId': subTaskId,
       'labName': labName,
       'technicianName': userName,
       'type': type,
@@ -363,17 +393,21 @@ class _EditTaskState extends State<EditTask> {
     };
 
     // Added task
-    _refTasks.child(formattedMonth).child(taskId).child(childId).set(task);
+    _refTaskUpdate.set(task);
 
-      if (_imageMachine != null) {
-        _uploadFile(
-            childId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
-      }
-      if (_imageSignature != null) {
-        _uploadFile(
-            childId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
-      }
-      Toast.show("Edited task!", context,
-          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+    if (_imageMachine != null) {
+      _uploadFile(
+          subTaskId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
+    } else {
+      _refTaskUpdate.child('machineImage').set(machineImage);
+    }
+    if (_imageSignature != null) {
+      _uploadFile(
+          subTaskId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
+    } else {
+      _refTaskUpdate.child('signatureImage').set(signatureImage);
+    }
+    Toast.show("Edited task!", context,
+        duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
   }
 }

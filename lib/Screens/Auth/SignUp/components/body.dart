@@ -42,7 +42,7 @@ class _BodyState extends State<Body> {
                 "SIGNUP",
                 style: TextStyle(
                     fontSize: 25,
-                    color: Colors.deepPurple,
+                    color: kPrimaryColor,
                     fontWeight: FontWeight.bold),
               ),
               SizedBox(height: size.height * 0.03),
@@ -129,7 +129,7 @@ class _BodyState extends State<Body> {
             ),
             DropdownButton<String>(
               value: dropdownValue,
-              style: TextStyle(color: Colors.deepPurple),
+              style: TextStyle(color: kPrimaryColor),
               underline: Container(
                 height: 2,
                 color: Colors.deepPurpleAccent,

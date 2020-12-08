@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Main/AddTask.dart';
@@ -6,11 +5,11 @@ import 'package:flutter_qr_scan/Screens/Main/AllTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/PersonalTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/UserManage.dart';
 
-class BottonMenuBar extends StatefulWidget {
+class BottomMenuBar extends StatefulWidget {
   final int idx;
   final String userId;
 
-  const BottonMenuBar({
+  const BottomMenuBar({
     Key key,
     this.idx,
     this.userId,
@@ -18,11 +17,11 @@ class BottonMenuBar extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _BottonMenuBarState();
+    return _BottomMenuBarState();
   }
 }
 
-class _BottonMenuBarState extends State<BottonMenuBar> {
+class _BottomMenuBarState extends State<BottomMenuBar> {
   int _currentIndex = 0;
 
   @override
@@ -31,19 +30,19 @@ class _BottonMenuBarState extends State<BottonMenuBar> {
 
     final List<Widget> _children = [
       AllTask(
-        title: 'All Task',
+        title: ALL_TASKS_TEXT,
         userId: userId,
       ),
       PersonalTask(
-        title: 'Personal Task',
+        title: PERSONAL_TASK_TEXT,
         userId: userId,
       ),
       AddTask(
-        title: 'Add Task',
+        title: ADD_TASK_TEXT,
         userId: userId,
       ),
       UserManage(
-        title: 'User',
+        title: USER_TEXT,
         userId: userId,
       ),
     ];
@@ -57,18 +56,35 @@ class _BottonMenuBarState extends State<BottonMenuBar> {
         currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            title: Text('All tasks'),
+            icon: Icon(
+              Icons.people,
+            ),
+            title: Text(
+              ALL_TASKS_TEXT,
+            ),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            title: Text('Personal Task'),
+            icon: Icon(
+              Icons.person,
+            ),
+            title: Text(
+              PERSONAL_TASK_TEXT,
+            ),
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.playlist_add_rounded), title: Text('Add task')),
+              icon: Icon(
+                Icons.playlist_add_rounded,
+              ),
+              title: Text(
+                ADD_TASK_TEXT,
+              )),
           BottomNavigationBarItem(
-            icon: Icon(Icons.portrait_rounded),
-            title: Text('Users'),
+            icon: Icon(
+              Icons.portrait_rounded,
+            ),
+            title: Text(
+              USER_TEXT,
+            ),
           )
         ],
       ),

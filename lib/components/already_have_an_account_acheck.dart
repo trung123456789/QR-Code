@@ -18,7 +18,7 @@ class AlreadyHaveAnAccountCheck extends StatelessWidget {
         GestureDetector(
           onTap: press,
           child: Text(
-            "Back to user manage",
+            BACK_TO_USER_MANAGE,
             style: TextStyle(
               color: kPrimaryColor,
               fontWeight: FontWeight.bold,

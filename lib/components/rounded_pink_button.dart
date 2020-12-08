@@ -10,7 +10,7 @@ class RoundedPinkButton extends StatelessWidget {
     this.text,
     this.press,
     this.color = Colors.white,
-    this.textColor = Colors.deepPurple,
+    this.textColor = kPrimaryColor,
   }) : super(key: key);
 
   @override

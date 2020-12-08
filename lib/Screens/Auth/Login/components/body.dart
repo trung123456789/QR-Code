@@ -45,11 +45,15 @@ class _BodyState extends State<Body> {
           children: <Widget>[
             Text(
               "LOGIN",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25,
+                  color: kPrimaryColor,
+              ),
             ),
             SizedBox(height: size.height * 0.03),
             SvgPicture.asset(
-              "assets/icons/undraw_mobile_login_ikmv.svg",
+              "assets/icons/undraw_contract_uy56.svg",
               height: size.height * 0.35,
             ),
             SizedBox(height: size.height * 0.03),

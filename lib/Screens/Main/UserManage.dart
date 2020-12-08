@@ -33,14 +33,16 @@ class UserManageState extends State<UserManage> {
     // TODO: implement initState
     super.initState();
     _ref = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
-    checkAuthority(widget.userId);
+    if (widget.userId != null) {
+      checkAuthority(widget.userId);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: kPrimaryColor,
         title: Center(
             child: Text(
           "Users",
@@ -99,14 +101,14 @@ class UserManageState extends State<UserManage> {
               content: Text('Do you want logout?'),
               actions: [
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     Navigator.pop(context);
                   },
                   child: Text('CANCEL'),
                 ),
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     deleteLoggedIn();
                     Navigator.push(
@@ -136,7 +138,7 @@ class UserManageState extends State<UserManage> {
                 children: [
                   Icon(
                     Icons.people_alt_outlined,
-                    color: Theme.of(context).primaryColor,
+                    color: kPrimaryColor,
                     size: 25,
                   ),
                   SizedBox(
@@ -146,7 +148,7 @@ class UserManageState extends State<UserManage> {
                     userInfo['yourName'],
                     style: TextStyle(
                         fontSize: 18,
-                        color: Theme.of(context).primaryColor,
+                        color: kPrimaryColor,
                         fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -223,14 +225,14 @@ class UserManageState extends State<UserManage> {
           content: Text('Do you want delete user?'),
           actions: [
             FlatButton(
-              textColor: Color(0xFF6200EE),
+              textColor: kPrimaryColor,
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text('CANCEL'),
             ),
             FlatButton(
-              textColor: Color(0xFF6200EE),
+              textColor: kPrimaryColor,
               onPressed: () {
                 _onClickDeleteUser(id);
                 Navigator.pop(context);

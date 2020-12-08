@@ -18,7 +18,7 @@ class BackToHome extends StatelessWidget {
         GestureDetector(
           onTap: press,
           child: Text(
-            "Back to home",
+            BACK_TO_HOME,
             style: TextStyle(
               decoration: TextDecoration.underline,
               color: Colors.white,

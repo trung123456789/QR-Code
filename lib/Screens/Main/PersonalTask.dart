@@ -1,10 +1,12 @@
+
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
+
+import 'TaskHistoryDetail.dart';
 
 class PersonalTask extends StatefulWidget {
   final String title;
@@ -14,7 +16,6 @@ class PersonalTask extends StatefulWidget {
     Key key,
     this.title,
     this.userId,
-
   }) : super(key: key);
 
   @override
@@ -22,26 +23,71 @@ class PersonalTask extends StatefulWidget {
 }
 
 class _PersonalTaskState extends State<PersonalTask> {
-
-  Query _ref;
+  DatabaseReference _ref, _refPersonal;
+  String userName;
+  List<String> listTaskText = [];
+  List<TaskInfo> taskInfoList = [];
 
   @override
   void initState() {
     super.initState();
-    _ref = FirebaseDatabase.instance
-        .reference()
-        .child(MONTH_FIREBASE)
-        .orderByChild('sort');
+    _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
+    _refPersonal =
+        FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
+    if (widget.userId != null) {
+      getDataPersonal(widget.userId);
+    }
+
   }
 
+  Future<void> getDataPersonal(String userId) async {
+    await _refPersonal.child(userId).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      if (values != null) {
+        values.forEach((key, value) {
+          Map<dynamic, dynamic> val = value;
+          val.forEach((k, v) {
+            listTaskText.add(v);
+          });
+        });
+      }
+    });
+    for (final lc in listTaskText) {
+      var arr = lc.split(SLASH);
+      await _ref
+          .child(arr[0])
+          .child(arr[1])
+          .child(arr[2])
+          .once()
+          .then((DataSnapshot snapshot) {
+        Map<dynamic, dynamic> values = snapshot.value;
+        TaskInfo taskInfo = new TaskInfo();
+        taskInfo.subTaskId = values[TASK_ID_FIELD];
+        taskInfo.technicianName = values[TECHNICIAN_NAME_FIELD];
+        taskInfo.workStatus = values[WORK_STATUS_FIELD];
+        taskInfo.date = values[DATE_FIELD];
+        taskInfo.month = arr[0];
+        taskInfo.taskId = arr[1];
+        setState(() {
+          taskInfoList.add(taskInfo);
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
-        title: Center(child: Text("Personal Task",style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
+        backgroundColor: kPrimaryColor,
+        title: Center(
+            child: Text(
+          "Personal Task",
+          style: TextStyle(
+              fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
+        )),
         actions: <Widget>[
           Builder(
             builder: (BuildContext context) {
@@ -55,6 +101,7 @@ class _PersonalTaskState extends State<PersonalTask> {
                     MaterialPageRoute(builder: (context) => ScanMain(userId: userId,)),
                   );
                 },
+                tooltip: "Back",
               );
             },
           ),
@@ -64,78 +111,116 @@ class _PersonalTaskState extends State<PersonalTask> {
       ),
       body: Container(
         height: double.infinity,
-        child: FirebaseAnimatedList(
-          query: _ref,
-          itemBuilder: (BuildContext context, DataSnapshot snapshot,
-              Animation<double> animation, int index) {
-            Map monthTask = snapshot.value;
-            return _buildContactItem(monthTask: monthTask);
+        child: ListView.builder(
+          itemCount: taskInfoList.length,
+          itemBuilder: (context, index) {
+            final item = taskInfoList[index];
+            return Container(
+              margin: EdgeInsets.symmetric(vertical: 5),
+              padding: EdgeInsets.all(10),
+              height: 115,
+              child: Row(children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  color: kPrimaryColor,
+                  size: 50,
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 10,
+                          ),
+                          SelectableText(
+                            item.subTaskId,
+                            onTap: () =>
+                                _taskHistoryDetail(item.month, item.taskId, item.subTaskId, userId),
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Text(
+                            item.technicianName,
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.pink,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 2,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Text(
+                            item.date,
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.pink,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 2,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Text(
+                            "workStatus: ${item.workStatus}",
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.pink,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
+            );
           },
         ),
       ),
     );
   }
 
-  Widget _buildContactItem({Map monthTask}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.all(10),
-      height: 70,
-      color: Colors.white,
-      child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        color: Theme.of(context).primaryColor,
-                        size: 25,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        monthTask['month'],
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 35,
-                      ),
-                      Text(
-                        monthTask['taskSize'],
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.pink,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            /*3*/
-            Icon(
-              Icons.download_rounded,
-              color: Colors.red[500],
-              size: 40,
-            ),
-          ]
-      ),
+  void _taskHistoryDetail(String month, String taskId, String subTaskId, String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TaskHistoryDetail(month: month, taskId: taskId, subTaskId: subTaskId, userId: userId,)),
     );
   }
+}
+
+class TaskInfo {
+  String subTaskId;
+  String workStatus;
+  String date;
+  String technicianName;
+  String taskId;
+  String month;
 }

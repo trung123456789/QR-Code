@@ -17,7 +17,7 @@ class HaveNotAnAccountCheck extends StatelessWidget {
       children: <Widget>[
         Text(
           "Don’t have an Account ? ",
-          style: TextStyle(color: kPrimaryColor),
+          style: TextStyle(color: kPrimaryColorText),
         ),
         GestureDetector(
           onTap: press,

@@ -45,7 +45,7 @@ class _MonthTaskState extends State<MonthTask> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: kPrimaryColor,
         title: Center(child: Text(title ,style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
         actions: <Widget>[
           Builder(
@@ -103,12 +103,12 @@ class _MonthTaskState extends State<MonthTask> {
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
       height: 95,
-      color: Colors.pink[50],
+      color: Colors.white,
       child: Row(
         children: [
           Icon(
             Icons.assignment_outlined,
-            color: Theme.of(context).primaryColor,
+            color: kPrimaryColor,
             size: 50,
           ),
           Expanded(
@@ -126,7 +126,7 @@ class _MonthTaskState extends State<MonthTask> {
                       onTap: () => _taskHistory(month, tasks['taskId'], userId),
                       style: TextStyle(
                           fontSize: 25,
-                          color: Theme.of(context).primaryColor,
+                          color: kPrimaryColor,
                           fontWeight: FontWeight.w600),
                     ),
                   ],

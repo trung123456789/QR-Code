@@ -29,22 +29,24 @@ class TaskHistoryDetail extends StatefulWidget {
 class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
   DatabaseReference _ref;
 
-  String labName = "";
-  String type = "";
-  String description = "";
-  String place = "";
-  String workStatus = "";
-  String overTime = "";
-  String technicianName = "";
-  String date = "";
-  String machineImage = "No Image";
-  String signatureImage = "No Image";
+  String labName = EMPTY_STRING;
+  String type = EMPTY_STRING;
+  String description = EMPTY_STRING;
+  String place = EMPTY_STRING;
+  String workStatus = EMPTY_STRING;
+  String overTime = EMPTY_STRING;
+  String technicianName = EMPTY_STRING;
+  String date = EMPTY_STRING;
+  String machineImage = NO_IMAGE;
+  String signatureImage = NO_IMAGE;
 
   @override
   void initState() {
     super.initState();
 
     _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
+
+    _initData(widget.month, widget.taskId, widget.subTaskId);
   }
 
   _initData(String month, String taskId, String subTaskId) async {
@@ -54,22 +56,22 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
       Map<dynamic, dynamic> values = snapshot.value;
 
       setState(() {
-        labName = defaultString(values['labName']);
-        type = defaultString(values['type']);
-        description = defaultString(values['description']);
-        place = defaultString(values['place']);
-        workStatus = defaultString(values['workStatus']);
-        overTime = defaultString(values['overTime']);
-        technicianName = defaultString(values['technicianName']);
-        date = defaultString(values['date']);
-        machineImage = values['machineImage'];
-        signatureImage = values['signatureImage'];
+        labName = defaultString(values[LAB_NAME_FIELD]);
+        type = defaultString(values[TYPE_FIELD]);
+        description = defaultString(values[DESCRIPTION_FIELD]);
+        place = defaultString(values[PLACE_FIELD]);
+        workStatus = defaultString(values[WORK_STATUS_FIELD]);
+        overTime = defaultString(values[OVER_TIME_FIELD]);
+        technicianName = defaultString(values[TECHNICIAN_NAME_FIELD]);
+        date = defaultString(values[DATE_FIELD]);
+        machineImage = values[MACHINE_IMAGE_FIELD];
+        signatureImage = values[SIGNATURE_IMAGE_FIELD];
       });
     });
   }
 
   String defaultString(String org) {
-    return org == "" ? 'No Data' : org;
+    return org == EMPTY_STRING ? NO_IMAGE : org;
   }
 
   @override
@@ -79,7 +81,6 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
     String subTaskId = widget.subTaskId;
     String userId = widget.userId;
     String title = "$subTaskId";
-    _initData(month, taskId, subTaskId);
 
     Size size = MediaQuery.of(context).size;
     return Material(
@@ -104,10 +105,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Task ID:                  ",
+                        TASK_ID_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -121,7 +122,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           subTaskId,
                           style: TextStyle(
-                              color: Colors.deepPurple,
+                              color: kPrimaryColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w700),
                           maxLines: 5,
@@ -139,10 +140,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Lab Name:            ",
+                        LAB_NAME_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -156,7 +157,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           labName,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -175,10 +176,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Technician Name:",
+                        TECHNICIAN_NAME_HEADER,
                         style: TextStyle(
-                          fontFamily: 'RobotoMono',
-                          color: Colors.deepPurple,
+                          fontFamily: FONT_DEFAULT,
+                          color: kPrimaryColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -193,7 +194,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           technicianName,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -212,10 +213,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Type:                      ",
+                        TYPE_HEADER,
                         style: TextStyle(
-                          fontFamily: 'RobotoMono',
-                          color: Colors.deepPurple,
+                          fontFamily: FONT_DEFAULT,
+                          color: kPrimaryColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -230,7 +231,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           type,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -249,10 +250,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Description:          ",
+                        DESCRIPTION_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -266,7 +267,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           description,
                           style: TextStyle(
-                              color: Colors.deepPurple,
+                              color: kPrimaryColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w700),
                           maxLines: 5,
@@ -284,10 +285,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Work Day:             ",
+                        WORK_DAY_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -301,7 +302,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           date,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -320,10 +321,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Place:                  ",
+                        PLACE_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -337,7 +338,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           place,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -356,10 +357,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Work Status:      ",
+                        WORK_STATUS_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -373,7 +374,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           workStatus,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -392,10 +393,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Over Time:          ",
+                        OVER_TIME_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -409,7 +410,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         child: Text(
                           overTime,
                           style: TextStyle(
-                            color: Colors.deepPurple,
+                            color: kPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -428,10 +429,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Machine Image: ",
+                        MACHINE_IMAGE_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -440,9 +441,13 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Container(
-                        width: 200.0,
+                      GestureDetector(
                         child: CircularImageFirebase(machineImage),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                            return DetailScreen(machineImage);
+                          }));
+                        },
                       ),
                     ],
                   ),
@@ -456,10 +461,10 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "Signature Image:",
+                        SIGNATURE_IMAGE_HEADER,
                         style: TextStyle(
-                            fontFamily: 'RobotoMono',
-                            color: Colors.deepPurple,
+                            fontFamily: FONT_DEFAULT,
+                            color: kPrimaryColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w700),
                       ),
@@ -467,9 +472,13 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                   ),
                   Column(
                     children: <Widget>[
-                      Container(
-                        width: 200.0,
+                      GestureDetector(
                         child: CircularImageFirebase(signatureImage),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                            return DetailScreen(signatureImage);
+                          }));
+                        },
                       ),
                     ],
                   ),
@@ -483,15 +492,15 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         Column(
                           children: [
                             FlatButton(
-                              color: Color(0xFF6200EE),
+                              color: kPrimaryColor,
                               textColor: Colors.white,
                               padding: EdgeInsets.all(8.0),
-                              splashColor: Color(0xFF6200EE),
+                              splashColor: kPrimaryColor,
                               onPressed: () {
                                 Navigator.pop(context);
                               },
                               child: Text(
-                                "Cancel",
+                                BUTTON_CANCEL_TEXT,
                                 style: TextStyle(fontSize: 16.0),
                               ),
                             ),
@@ -500,15 +509,24 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                         Column(
                           children: <Widget>[
                             FlatButton(
-                              color: Color(0xFF6200EE),
+                              color: kPrimaryColor,
                               textColor: Colors.white,
                               padding: EdgeInsets.all(8.0),
-                              splashColor: Color(0xFF6200EE),
+                              splashColor: kPrimaryColor,
                               onPressed: () {
-                                EditTask(userId: userId,);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EditTask(
+                                            month: month,
+                                            taskId: taskId,
+                                            subTaskId: subTaskId,
+                                            userId: userId,
+                                          )),
+                                );
                               },
                               child: Text(
-                                "Edit",
+                                BUTTON_EDIT_TEXT,
                                 style: TextStyle(fontSize: 16.0),
                               ),
                             )
@@ -517,21 +535,46 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ],
                     )
                   : FlatButton(
-                      color: Color(0xFF6200EE),
+                      color: kPrimaryColor,
                       textColor: Colors.white,
                       padding: EdgeInsets.all(8.0),
-                      splashColor: Color(0xFF6200EE),
+                      splashColor: kPrimaryColor,
                       onPressed: () {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "Cancel",
+                        BUTTON_CANCEL_TEXT,
                         style: TextStyle(fontSize: 16.0),
                       ),
                     ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class DetailScreen extends StatelessWidget {
+  DetailScreen(this.imageUrl);
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        child: Center(
+          child: Hero(
+            tag: 'imageHero',
+            child: Image.network(
+              imageUrl,
+            ),
+          ),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+        },
       ),
     );
   }
