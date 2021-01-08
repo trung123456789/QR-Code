@@ -41,7 +41,7 @@ class _MonthTaskState extends State<MonthTask> {
     String userId = widget.userId;
     String title = "Month $month";
 
-    Query query = _ref.child(month);
+    Query query = _ref.child(month).orderByChild('sort');
 
     return Scaffold(
       appBar: AppBar(

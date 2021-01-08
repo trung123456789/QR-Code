@@ -42,8 +42,8 @@ class _AddTaskState extends State<AddTask> {
   GlobalKey globalKey = new GlobalKey();
   TaskInfo taskInfo = new TaskInfo();
   final DateTime now = DateTime.now();
-  final DateFormat formatterMonth = DateFormat('yyyy-MM');
-  final DateFormat formatterDate = DateFormat('yyyy-MM-dd hh:mm:ss');
+  final DateFormat formatterMonth = DateFormat(FORMAT_MONTH);
+  final DateFormat formatterDate = DateFormat(FORMAT_DATE_TIME);
   String formattedMonth;
   String formattedDate;
   var epochTime;
@@ -74,7 +74,8 @@ class _AddTaskState extends State<AddTask> {
         FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
     _refMonth = FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
     _refUser = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
-    _refPersonal = FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
+    _refPersonal =
+        FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
     _refStorage = FirebaseStorage.instance.ref();
     formattedMonth = formatterMonth.format(now);
     formattedDate = formatterDate.format(now);
@@ -145,9 +146,9 @@ class _AddTaskState extends State<AddTask> {
               .then((fileURL) {
             log("Uploaded to Storage!");
             if (child == IMAGE_MACHINE_FIELD) {
-              _refTaskUpdate.child('machineImage').set(fileURL);
+              _refTaskUpdate.child(MACHINE_IMAGE_FIELD).set(fileURL);
             } else {
-              _refTaskUpdate.child('signatureImage').set(fileURL);
+              _refTaskUpdate.child(SIGNATURE_IMAGE_FIELD).set(fileURL);
             }
           })
         });
@@ -162,7 +163,7 @@ class _AddTaskState extends State<AddTask> {
         backgroundColor: kPrimaryColor,
         title: Center(
             child: Text(
-          "Add Task",
+          ADD_TASK_TEXT,
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
         )),
@@ -252,7 +253,7 @@ class _AddTaskState extends State<AddTask> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        "MACHINE IMAGE",
+                        MACHINE_IMAGE_TEXT,
                         style: TextStyle(
                             color: kPrimaryColor,
                             fontSize: 12,
@@ -260,14 +261,14 @@ class _AddTaskState extends State<AddTask> {
                             letterSpacing: 1.3),
                       ),
                       RoundedNormalButton(
-                        text: "MACHINE IMAGE",
+                        text: MACHINE_IMAGE_TEXT,
                         press: () {
                           _showPicker(context, typeMachine);
                         },
                       ),
                       SizedBox(height: size.height * 0.03),
                       Text(
-                        "SIGNATURE IMAGE",
+                        SIGNATURE_IMAGE_TEXT,
                         style: TextStyle(
                             color: kPrimaryColor,
                             fontSize: 12,
@@ -275,7 +276,7 @@ class _AddTaskState extends State<AddTask> {
                             letterSpacing: 1.3),
                       ),
                       RoundedNormalButton(
-                        text: "SIGNATURE IMAGE",
+                        text: SIGNATURE_IMAGE_TEXT,
                         press: () {
                           _showPicker(context, typeSignature);
                         },
@@ -295,7 +296,7 @@ class _AddTaskState extends State<AddTask> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: RoundedButton(
-                  text: "Add Task",
+                  text: ADD_TASK_TEXT,
                   press: () {
                     if (_formKey.currentState.validate()) {
                       saveTask(userId);
@@ -321,32 +322,32 @@ class _AddTaskState extends State<AddTask> {
     int monthSize = 0;
     int taskSize = 0;
     String userName;
-    var childId = taskId + "-" + epochTime;
+    var childId = taskId + DASH + epochTime;
     DatabaseReference _refTaskUpdate =
         _refTasks.child(formattedMonth).child(taskId).child(childId);
 
     _refUser.child(userId).once().then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       values.forEach((key, value) {
-        if (key == "yourName") {
+        if (key == YOUR_NAME_FIELD) {
           userName = value;
         }
       });
     });
 
     Map<String, String> task = {
-      'taskId': childId,
-      'labName': labName,
-      'technicianName': userName,
-      'type': type,
-      'description': description,
-      'place': place,
-      'workStatus': workStatus,
-      'overTime': overTime,
-      'machineImage': "No Image",
-      'signatureImage': "No Image",
-      'date': formattedDate,
-      'sort': sort.toString(),
+      TASK_ID_FIELD: childId,
+      LAB_NAME_FIELD: labName,
+      TECHNICIAN_NAME_FIELD: userName,
+      TYPE_FIELD: type,
+      DESCRIPTION_FIELD: description,
+      PLACE_FIELD: place,
+      WORK_STATUS_FIELD: workStatus,
+      OVER_TIME_FIELD: overTime,
+      MACHINE_IMAGE_FIELD: NO_IMAGE,
+      SIGNATURE_IMAGE_FIELD: NO_IMAGE,
+      DATE_FIELD: formattedDate,
+      SORT_FIELD: sort.toString(),
     };
 
     // Added task
@@ -363,19 +364,25 @@ class _AddTaskState extends State<AddTask> {
       });
 
       Map<String, String> lastTask = {
-        'taskId': taskId,
-        'labName': labName,
-        'technicianName': userName,
-        'date': formattedDate,
-        'sort': sort.toString(),
-        'taskSize': taskSize.toString() + TASK_CONTENT,
+        TASK_ID_FIELD: taskId,
+        LAB_NAME_FIELD: labName,
+        TECHNICIAN_NAME_FIELD: userName,
+        DATE_FIELD: formattedDate,
+        SORT_FIELD: sort.toString(),
+        TASK_SIZE_FIELD: taskSize.toString() + TASK_CONTENT,
       };
 
       // Added last task
       _refLastTask.child(formattedMonth).child(taskId).set(lastTask);
+      _refLastTask
+          .child(formattedMonth)
+          .child(taskId)
+          .child(SORT_FIELD)
+          .set(sort);
 
       // Update technician name
-      _refTaskUpdate.child('technicianName').set(userName);
+      _refTaskUpdate.child(TECHNICIAN_NAME_FIELD).set(userName);
+      _refTaskUpdate.child(SORT_FIELD).set(sort);
     });
 
     _refTasks.child(formattedMonth).once().then((DataSnapshot snapshot) {
@@ -384,9 +391,9 @@ class _AddTaskState extends State<AddTask> {
         monthSize += value.length;
       });
       Map<String, String> month = {
-        'month': formattedMonth,
-        'taskSize': monthSize.toString() + TASK_CONTENT,
-        'sort': sort.toString(),
+        MONTH_FIELD: formattedMonth,
+        TASK_SIZE_FIELD: monthSize.toString() + TASK_CONTENT,
+        SORT_FIELD: sort.toString(),
       };
       if (_imageMachine != null) {
         _uploadFile(
@@ -398,7 +405,7 @@ class _AddTaskState extends State<AddTask> {
       }
       String personalContent = [formattedMonth, taskId, childId].join(SLASH);
       Map<String, String> personalInfo = {
-        'PersonalInfo': personalContent,
+        PERSONAL_INFO_FIREBASE: personalContent,
       };
 
       _refPersonal.child(userId).child(childId).set(personalInfo);
@@ -406,14 +413,16 @@ class _AddTaskState extends State<AddTask> {
       Toast.show("Added new task!", context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
 
-      String inputCode = QR_MATCH_CODE + SLASH + formattedMonth + SLASH + taskId;
+      String inputCode =
+          QR_MATCH_CODE + SLASH + formattedMonth + SLASH + taskId;
 
       _generateBarCode(taskId, inputCode);
 
       // ImageGallerySaver.saveImage(this.bytes);
 
       // Added month
-      _refMonth.child(formattedMonth).set(month).then((value) {
+      _refMonth.child(formattedMonth).set(month);
+      _refMonth.child(formattedMonth).child(SORT_FIELD).set(sort).then((value) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) {

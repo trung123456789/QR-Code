@@ -37,7 +37,6 @@ class _PersonalTaskState extends State<PersonalTask> {
     if (widget.userId != null) {
       getDataPersonal(widget.userId);
     }
-
   }
 
   Future<void> getDataPersonal(String userId) async {
@@ -58,6 +57,7 @@ class _PersonalTaskState extends State<PersonalTask> {
           .child(arr[0])
           .child(arr[1])
           .child(arr[2])
+          .orderByChild('sort')
           .once()
           .then((DataSnapshot snapshot) {
         Map<dynamic, dynamic> values = snapshot.value;
@@ -68,11 +68,12 @@ class _PersonalTaskState extends State<PersonalTask> {
         taskInfo.date = values[DATE_FIELD];
         taskInfo.month = arr[0];
         taskInfo.taskId = arr[1];
-        setState(() {
-          taskInfoList.add(taskInfo);
-        });
+        taskInfoList.add(taskInfo);
       });
     }
+    setState(() {
+      taskInfoList.sort((a, b) => b.date.compareTo(a.date));
+    });
   }
 
   @override

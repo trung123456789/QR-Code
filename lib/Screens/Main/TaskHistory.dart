@@ -42,7 +42,7 @@ class _TaskHistoryState extends State<TaskHistory> {
     String taskId = widget.taskId;
     String title = "$taskId";
 
-    Query query = _ref.child(month).child(taskId);
+    Query query = _ref.child(month).child(taskId).orderByChild('sort');
 
     return Scaffold(
       appBar: AppBar(

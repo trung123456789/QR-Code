@@ -376,36 +376,48 @@ class _EditTaskState extends State<EditTask> {
 
     DatabaseReference _refTaskUpdate =
         _refTasks.child(month).child(taskId).child(subTaskId);
+    DatabaseReference _refMonth =
+        FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
+    DatabaseReference _refLastTask =
+        FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
 
     Map<String, String> task = {
-      'taskId': subTaskId,
-      'labName': labName,
-      'technicianName': userName,
-      'type': type,
-      'description': description,
-      'place': place,
-      'workStatus': workStatus,
-      'overTime': overTime,
-      'machineImage': "No Image",
-      'signatureImage': "No Image",
-      'date': formattedDate,
-      'sort': sort.toString(),
+      TASK_ID_FIELD: subTaskId,
+      LAB_NAME_FIELD: labName,
+      TECHNICIAN_NAME_FIELD: userName,
+      TYPE_FIELD: type,
+      DESCRIPTION_FIELD: description,
+      PLACE_FIELD: place,
+      WORK_STATUS_FIELD: workStatus,
+      OVER_TIME_FIELD: overTime,
+      MACHINE_IMAGE_FIELD: NO_IMAGE,
+      SIGNATURE_IMAGE_FIELD: NO_IMAGE,
+      DATE_FIELD: formattedDate,
+      SORT_FIELD: sort.toString(),
     };
 
     // Added task
     _refTaskUpdate.set(task);
+    _refTaskUpdate.child(SORT_FIELD).set(task);
+
+    _refMonth.child(formattedMonth).child(SORT_FIELD).set(sort);
+    _refLastTask
+        .child(formattedMonth)
+        .child(taskId)
+        .child(SORT_FIELD)
+        .set(sort);
 
     if (_imageMachine != null) {
       _uploadFile(
           subTaskId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
     } else {
-      _refTaskUpdate.child('machineImage').set(machineImage);
+      _refTaskUpdate.child(MACHINE_IMAGE_FIELD).set(machineImage);
     }
     if (_imageSignature != null) {
       _uploadFile(
           subTaskId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
     } else {
-      _refTaskUpdate.child('signatureImage').set(signatureImage);
+      _refTaskUpdate.child(SIGNATURE_IMAGE_FIELD).set(signatureImage);
     }
     Toast.show("Edited task!", context,
         duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
