@@ -1,4 +1,3 @@
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +26,12 @@ class _PersonalTaskState extends State<PersonalTask> {
   String userName;
   List<String> listTaskText = [];
   List<TaskInfo> taskInfoList = [];
+
+  int present = 0;
+  int perPage = 15;
+  int returnMaxNum = 0;
+
+  List itemCurrentPages = [];
 
   @override
   void initState() {
@@ -76,6 +81,20 @@ class _PersonalTaskState extends State<PersonalTask> {
     });
   }
 
+  void loadMore() {
+    setState(() {
+      if ((present + perPage) > taskInfoList.length) {
+        itemCurrentPages
+            .addAll(taskInfoList.getRange(present, taskInfoList.length));
+        present = taskInfoList.length;
+      } else {
+        itemCurrentPages
+            .addAll(taskInfoList.getRange(present, present + perPage));
+        present = present + perPage;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
@@ -99,7 +118,10 @@ class _PersonalTaskState extends State<PersonalTask> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ScanMain(userId: userId,)),
+                    MaterialPageRoute(
+                        builder: (context) => ScanMain(
+                              userId: userId,
+                            )),
                   );
                 },
                 tooltip: "Back",
@@ -110,12 +132,16 @@ class _PersonalTaskState extends State<PersonalTask> {
         elevation: 50.0,
         brightness: Brightness.dark,
       ),
-      body: Container(
-        height: double.infinity,
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+            loadMore();
+          }
+        },
         child: ListView.builder(
-          itemCount: taskInfoList.length,
+          itemCount: itemCurrentPages.length,
           itemBuilder: (context, index) {
-            final item = taskInfoList[index];
+            final item = itemCurrentPages[index];
             return Container(
               margin: EdgeInsets.symmetric(vertical: 5),
               padding: EdgeInsets.all(10),
@@ -138,8 +164,8 @@ class _PersonalTaskState extends State<PersonalTask> {
                           ),
                           SelectableText(
                             item.subTaskId,
-                            onTap: () =>
-                                _taskHistoryDetail(item.month, item.taskId, item.subTaskId, userId),
+                            onTap: () => _taskHistoryDetail(item.month,
+                                item.taskId, item.subTaskId, userId),
                             style: TextStyle(
                                 fontSize: 20,
                                 color: kPrimaryColor,
@@ -209,10 +235,17 @@ class _PersonalTaskState extends State<PersonalTask> {
     );
   }
 
-  void _taskHistoryDetail(String month, String taskId, String subTaskId, String userId) {
+  void _taskHistoryDetail(
+      String month, String taskId, String subTaskId, String userId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TaskHistoryDetail(month: month, taskId: taskId, subTaskId: subTaskId, userId: userId,)),
+      MaterialPageRoute(
+          builder: (context) => TaskHistoryDetail(
+                month: month,
+                taskId: taskId,
+                subTaskId: subTaskId,
+                userId: userId,
+              )),
     );
   }
 }

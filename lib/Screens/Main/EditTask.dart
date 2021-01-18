@@ -52,7 +52,7 @@ class _EditTaskState extends State<EditTask> {
   var epochTime;
   String userName;
 
-  TextEditingController _taskIdController,
+  TextEditingController _taskNameController,
       _labNameController,
       _typeController,
       _descriptionController,
@@ -60,15 +60,15 @@ class _EditTaskState extends State<EditTask> {
       _workStatusController,
       _overTimeController;
   File _imageMachine, _imageSignature;
-  String machineImage = "No Image";
-  String signatureImage = "No Image";
+  String machineImage = NO_IMAGE;
+  String signatureImage = NO_IMAGE;
   DatabaseReference _refTasks, _refUser;
   Reference _refStorage;
 
   @override
   void initState() {
     super.initState();
-    _taskIdController = TextEditingController();
+    _taskNameController = TextEditingController();
     _labNameController = TextEditingController();
     _typeController = TextEditingController();
     _descriptionController = TextEditingController();
@@ -167,7 +167,7 @@ class _EditTaskState extends State<EditTask> {
         .then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       setState(() {
-        _taskIdController.text = values['taskId'];
+        _taskNameController.text = values['taskName'];
         _labNameController.text = values['labName'];
         _typeController.text = values['type'];
         _descriptionController.text = values['description'];
@@ -207,10 +207,10 @@ class _EditTaskState extends State<EditTask> {
             children: <Widget>[
               TextFormField(
                 enabled: false,
-                controller: _taskIdController,
+                controller: _taskNameController,
                 decoration: const InputDecoration(
                     icon: const Icon(Icons.perm_identity),
-                    labelText: 'Task ID'),
+                    labelText: 'Task Name'),
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Required field! Please enter information';
@@ -317,14 +317,14 @@ class _EditTaskState extends State<EditTask> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      (_imageMachine != null || machineImage == "No Image")
+                      (_imageMachine != null || machineImage == NO_IMAGE)
                           ? CircularImage(_imageMachine)
                           : Container(
                               width: 200.0,
                               child: CircularImageFirebase(machineImage),
                             ),
                       SizedBox(height: size.height * 0.03),
-                      (_imageSignature != null || signatureImage == "No Image")
+                      (_imageSignature != null || signatureImage == NO_IMAGE)
                           ? CircularImage(_imageSignature)
                           : Container(
                               width: 200.0,
@@ -365,6 +365,7 @@ class _EditTaskState extends State<EditTask> {
   }
 
   void saveTask(String userId, String taskId, String subTaskId, String month) {
+    String taskName = _taskNameController.text;
     String labName = _labNameController.text;
     String type = _typeController.text;
     String description = _descriptionController.text;
@@ -383,6 +384,7 @@ class _EditTaskState extends State<EditTask> {
 
     Map<String, String> task = {
       TASK_ID_FIELD: subTaskId,
+      TASK_NAME_FIELD: taskName,
       LAB_NAME_FIELD: labName,
       TECHNICIAN_NAME_FIELD: userName,
       TYPE_FIELD: type,
@@ -398,8 +400,7 @@ class _EditTaskState extends State<EditTask> {
 
     // Added task
     _refTaskUpdate.set(task);
-    _refTaskUpdate.child(SORT_FIELD).set(task);
-
+    _refTaskUpdate.child(SORT_FIELD).set(sort);
     _refMonth.child(formattedMonth).child(SORT_FIELD).set(sort);
     _refLastTask
         .child(formattedMonth)

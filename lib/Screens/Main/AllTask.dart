@@ -28,7 +28,6 @@ class AllTask extends StatefulWidget {
 }
 
 class _AllTaskState extends State<AllTask> {
-
   Query _ref;
 
   @override
@@ -40,14 +39,18 @@ class _AllTaskState extends State<AllTask> {
         .orderByChild("sort");
   }
 
-
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
-        title: Center(child: Text("All Task",style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
+        title: Center(
+            child: Text(
+          "All Task",
+          style: TextStyle(
+              fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
+        )),
         actions: <Widget>[
           Builder(
             builder: (BuildContext context) {
@@ -58,7 +61,10 @@ class _AllTaskState extends State<AllTask> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ScanMain(userId: userId,)),
+                    MaterialPageRoute(
+                        builder: (context) => ScanMain(
+                              userId: userId,
+                            )),
                   );
                 },
               );
@@ -88,71 +94,69 @@ class _AllTaskState extends State<AllTask> {
       padding: EdgeInsets.all(10),
       height: 70,
       color: Colors.white,
-      child: Row(
-        children: [
-          Icon(
-            Icons.assignment_outlined,
-            color: kPrimaryColor,
-            size: 40,
+      child: Row(children: [
+        Icon(
+          Icons.assignment_outlined,
+          color: kPrimaryColor,
+          size: 40,
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    width: 10,
+                  ),
+                  SelectableText(
+                    monthTask['month'],
+                    onTap: () => _monthTask(monthTask['month'], userId),
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    monthTask['taskSize'],
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.pink,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ],
           ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 10,
-                    ),
-                    SelectableText(
-                      monthTask['month'],
-                      onTap: () => _monthTask(monthTask['month'], userId),
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: kPrimaryColor,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      monthTask['taskSize'],
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.pink,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          /*3*/
-          Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: Icon(
-                  Icons.download_rounded,
-                  color: Colors.red[500],
-                  size: 40,
-                ),
-                onPressed: () {
-                  _showMaterialDialog(monthTask['month']);
-                },
-                tooltip: "Back",
-              );
-            },
-          ),
-        ]
-      ),
+        ),
+        /*3*/
+        Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: Icon(
+                Icons.download_rounded,
+                color: Colors.red[500],
+                size: 40,
+              ),
+              onPressed: () {
+                _showMaterialDialog(monthTask['month']);
+              },
+              tooltip: "Back",
+            );
+          },
+        ),
+      ]),
     );
   }
 
@@ -160,42 +164,47 @@ class _AllTaskState extends State<AllTask> {
     showDialog(
         context: context,
         builder: (BuildContext context) => new AlertDialog(
-          title: Text('Export confirm?'),
-          content: Text('Do you want export data?'),
-          actions: [
-            FlatButton(
-              textColor: Color(0xFF6200EE),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('CANCEL'),
-            ),
-            FlatButton(
-              textColor: Color(0xFF6200EE),
-              onPressed: () {
-                _exportToCsv(month);
-                Navigator.pop(context);
-
-              },
-              child: Text('ACCEPT'),
-            ),
-          ],
-        ));
+              title: Text('Export confirm?'),
+              content: Text('Do you want export data?'),
+              actions: [
+                FlatButton(
+                  textColor: Color(0xFF6200EE),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('CANCEL'),
+                ),
+                FlatButton(
+                  textColor: Color(0xFF6200EE),
+                  onPressed: () {
+                    _updateBKData(month);
+                    Navigator.pop(context);
+                  },
+                  child: Text('ACCEPT'),
+                ),
+              ],
+            ));
   }
 
   void _monthTask(String month, String userId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MonthTask(month: month,userId: userId,)),
+      MaterialPageRoute(
+          builder: (context) => MonthTask(
+                month: month,
+                userId: userId,
+              )),
     );
   }
 
   void _exportToCsv(String month) async {
     log('month: $month');
-    String header = "Technician Name,Task ID,Place,Lab Name,Description,Type,Work Status,Over Time,Date\n";
+    String header =
+        "Technician Name,Task ID,Task Name,Place,Lab Name,Description,Type,Work Status,Over Time,Date\n";
     List<String> csvDataList = List<String>();
     csvDataList.add(header);
-    DatabaseReference _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE).child(month);
+    DatabaseReference _ref =
+        FirebaseDatabase.instance.reference().child(TASK_FIREBASE).child(month);
     final directory = await getExternalStorageDirectory();
 
     _ref.once().then((DataSnapshot snapshot) {
@@ -211,16 +220,66 @@ class _AllTaskState extends State<AllTask> {
           String place = v['place'];
           String type = v['type'];
           String taskId = v['taskId'];
+          String taskName = v['taskId'];
 
-          String record = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s\n", [technicianName, taskId, place, labName, description, type, workStatus, overTime, date]);
+          String record = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", [
+            technicianName,
+            taskId,
+            taskName,
+            place,
+            labName,
+            description,
+            type,
+            workStatus,
+            overTime,
+            date
+          ]);
           csvDataList.add(record);
         });
       });
+
       /// Write to a file
       final pathOfTheFileToWrite = directory.path + "/$month.csv";
       File file = File(pathOfTheFileToWrite);
       file.writeAsString(csvDataList.join(''));
     });
-    Toast.show("Exported to CSV!", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    Toast.show("Exported to CSV!", context,
+        duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+  }
+
+  void _updateBKData(String month) async {
+    log('month: $month');
+    DatabaseReference _ref =
+        FirebaseDatabase.instance.reference().child(TASK_FIREBASE).child(month);
+    DatabaseReference _refLastTask = FirebaseDatabase.instance
+        .reference()
+        .child(LAST_TASK_FIREBASE)
+        .child(month);
+
+    _ref.once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        String taskIdTemp = key;
+        value.forEach((k, v) {
+          String subTaskId = k;
+          // _ref
+          //     .child(taskIdTemp)
+          //     .child(subTaskId)
+          //     .child(TASK_NAME_FIELD)
+          //     .set(v['taskId']);
+
+          Map<String, String> lastTask = {
+            TASK_ID_FIELD: taskIdTemp,
+            TASK_NAME_FIELD: v['taskName'],
+            LAB_NAME_FIELD: v['labName'],
+            TECHNICIAN_NAME_FIELD: v['technicianName'],
+            DATE_FIELD: v['date'],
+            SORT_FIELD: v['sort'].toString(),
+            TASK_SIZE_FIELD: "1 tasks",
+          };
+          _refLastTask.child(taskIdTemp).set(lastTask);
+        });
+      });
+    });
   }
 }

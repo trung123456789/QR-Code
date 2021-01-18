@@ -5,6 +5,9 @@ import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/components/background.dart';
 import 'package:flutter_qr_scan/Screens/Main/EditTask.dart';
 import 'package:flutter_qr_scan/components/circle_image_container_firebase.dart';
+import 'package:toast/toast.dart';
+
+import 'MainScreen.dart';
 
 class TaskHistoryDetail extends StatefulWidget {
   final String title;
@@ -28,7 +31,9 @@ class TaskHistoryDetail extends StatefulWidget {
 
 class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
   DatabaseReference _ref;
+  var epochTime;
 
+  String taskName = EMPTY_STRING;
   String labName = EMPTY_STRING;
   String type = EMPTY_STRING;
   String description = EMPTY_STRING;
@@ -45,6 +50,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
     super.initState();
 
     _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
+    epochTime = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
 
     _initData(widget.month, widget.taskId, widget.subTaskId);
   }
@@ -56,6 +62,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
       Map<dynamic, dynamic> values = snapshot.value;
 
       setState(() {
+        taskName = defaultString(values[TASK_NAME_FIELD]);
         labName = defaultString(values[LAB_NAME_FIELD]);
         type = defaultString(values[TYPE_FIELD]);
         description = defaultString(values[DESCRIPTION_FIELD]);
@@ -71,7 +78,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
   }
 
   String defaultString(String org) {
-    return org == EMPTY_STRING ? NO_IMAGE : org;
+    return org == EMPTY_STRING ? NO_DATA : org;
   }
 
   @override
@@ -80,7 +87,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
     String taskId = widget.taskId;
     String subTaskId = widget.subTaskId;
     String userId = widget.userId;
-    String title = "$subTaskId";
+    String title = "$taskName";
 
     Size size = MediaQuery.of(context).size;
     return Material(
@@ -105,7 +112,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        TASK_ID_HEADER,
+                        TASK_NAME_HEADER,
                         style: TextStyle(
                             fontFamily: FONT_DEFAULT,
                             color: kPrimaryColor,
@@ -120,7 +127,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       Container(
                         width: 200.0,
                         child: Text(
-                          subTaskId,
+                          taskName,
                           style: TextStyle(
                               color: kPrimaryColor,
                               fontSize: 14,
@@ -444,7 +451,8 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       GestureDetector(
                         child: CircularImageFirebase(machineImage),
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (_) {
                             return DetailScreen(machineImage);
                           }));
                         },
@@ -475,9 +483,12 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       GestureDetector(
                         child: CircularImageFirebase(signatureImage),
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) {
-                            return DetailScreen(signatureImage);
-                          }));
+                          if (signatureImage != NO_IMAGE) {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (_) {
+                              return DetailScreen(signatureImage);
+                            }));
+                          }
                         },
                       ),
                     ],
@@ -531,6 +542,23 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                               ),
                             )
                           ],
+                        ),
+                        Column(
+                          children: [
+                            FlatButton(
+                              color: kPrimaryColor,
+                              textColor: Colors.white,
+                              padding: EdgeInsets.all(8.0),
+                              splashColor: kPrimaryColor,
+                              onPressed: () {
+                                _showMaterialDialog(userId, taskId, subTaskId, month);
+                              },
+                              child: Text(
+                                BUTTON_DELETE_TEXT,
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                            ),
+                          ],
                         )
                       ],
                     )
@@ -551,6 +579,108 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
           ),
         ),
       ),
+    );
+  }
+
+  _showMaterialDialog(String userId, String taskId, String subTaskId, String month) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => new AlertDialog(
+          title: Text('Delete confirm?'),
+          content: Text('Do you want delete task?'),
+          actions: [
+            FlatButton(
+              textColor: kPrimaryColor,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('CANCEL'),
+            ),
+            FlatButton(
+              textColor: kPrimaryColor,
+              onPressed: () {
+                deleteTask(userId, taskId, subTaskId, month);
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ));
+  }
+
+  void deleteTask(
+      String userId, String taskId, String subTaskId, String month) {
+    int taskSize = 0;
+    int monthSize = 0;
+    DatabaseReference _refTasks =
+        FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
+    DatabaseReference _refPersonal =
+        FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
+    DatabaseReference _refMonth =
+        FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
+    DatabaseReference _refLastTask =
+        FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
+
+    _refTasks.child(month).child(taskId).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        taskSize += 1;
+      });
+      // Delete task
+      if (taskSize > 1) {
+        _refTasks.child(month).child(taskId).child(subTaskId).remove();
+      } else {
+        _refTasks.child(month).child(taskId).remove();
+      }
+    });
+
+    // Delete personal task
+    _refPersonal.child(userId).child(subTaskId).remove();
+
+    // Update size task
+    _refTasks.child(month).once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        monthSize += value.length;
+      });
+      _refMonth
+          .child(month)
+          .child(TASK_SIZE_FIELD)
+          .set(monthSize.toString() + TASK_CONTENT);
+      _refMonth.child(month).child(SORT_FIELD).set(int.parse(epochTime) * -1);
+    });
+
+    // Delete last task
+    _refLastTask
+        .child(month)
+        .child(taskId)
+        .once()
+        .then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, value) {
+        if (key == TASK_SIZE_FIELD) {
+          int taskSize = int.parse(value.toString().split(" ")[0]);
+          if (taskSize == ONE_TASK_SIZE) {
+            _refLastTask.child(month).child(taskId).remove();
+          } else {
+            _refLastTask
+                .child(month)
+                .child(taskId)
+                .child(TASK_SIZE_FIELD)
+                .set((taskSize - 1).toString() + TASK_CONTENT);
+          }
+        }
+      });
+    });
+    Toast.show("Deleted task!", context,
+        duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) {
+        return MainScreen(
+          userId: userId,
+        );
+      }),
     );
   }
 }

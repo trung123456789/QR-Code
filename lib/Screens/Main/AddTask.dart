@@ -48,7 +48,7 @@ class _AddTaskState extends State<AddTask> {
   String formattedDate;
   var epochTime;
 
-  TextEditingController _taskIdController,
+  TextEditingController _taskNameController,
       _labNameController,
       _typeController,
       _descriptionController,
@@ -62,7 +62,7 @@ class _AddTaskState extends State<AddTask> {
   @override
   void initState() {
     super.initState();
-    _taskIdController = TextEditingController();
+    _taskNameController = TextEditingController();
     _labNameController = TextEditingController();
     _typeController = TextEditingController();
     _descriptionController = TextEditingController();
@@ -176,10 +176,10 @@ class _AddTaskState extends State<AddTask> {
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24),
             children: <Widget>[
               TextFormField(
-                controller: _taskIdController,
+                controller: _taskNameController,
                 decoration: const InputDecoration(
                     icon: const Icon(Icons.perm_identity),
-                    labelText: 'Task ID'),
+                    labelText: 'Task Name'),
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Required field! Please enter information';
@@ -310,7 +310,7 @@ class _AddTaskState extends State<AddTask> {
   }
 
   void saveTask(String userId) {
-    String taskId = _taskIdController.text;
+    String taskName = _taskNameController.text;
     String labName = _labNameController.text;
     String type = _typeController.text;
     String description = _descriptionController.text;
@@ -318,13 +318,15 @@ class _AddTaskState extends State<AddTask> {
     String workStatus = _workStatusController.text;
     String overTime = _overTimeController.text;
 
+    String taskId = int.parse(epochTime).toString();
+    String subTaskId = taskId + DASH + int.parse(epochTime).toString();
     var sort = int.parse(epochTime) * -1;
     int monthSize = 0;
     int taskSize = 0;
     String userName;
-    var childId = taskId + DASH + epochTime;
+    var childName = taskName + DASH + epochTime;
     DatabaseReference _refTaskUpdate =
-        _refTasks.child(formattedMonth).child(taskId).child(childId);
+        _refTasks.child(formattedMonth).child(taskId).child(subTaskId);
 
     _refUser.child(userId).once().then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
@@ -336,7 +338,8 @@ class _AddTaskState extends State<AddTask> {
     });
 
     Map<String, String> task = {
-      TASK_ID_FIELD: childId,
+      TASK_ID_FIELD: subTaskId,
+      TASK_NAME_FIELD: childName,
       LAB_NAME_FIELD: labName,
       TECHNICIAN_NAME_FIELD: userName,
       TYPE_FIELD: type,
@@ -351,7 +354,7 @@ class _AddTaskState extends State<AddTask> {
     };
 
     // Added task
-    _refTasks.child(formattedMonth).child(taskId).child(childId).set(task);
+    _refTasks.child(formattedMonth).child(taskId).child(subTaskId).set(task);
 
     _refTasks
         .child(formattedMonth)
@@ -365,6 +368,7 @@ class _AddTaskState extends State<AddTask> {
 
       Map<String, String> lastTask = {
         TASK_ID_FIELD: taskId,
+        TASK_NAME_FIELD: taskName,
         LAB_NAME_FIELD: labName,
         TECHNICIAN_NAME_FIELD: userName,
         DATE_FIELD: formattedDate,
@@ -397,18 +401,18 @@ class _AddTaskState extends State<AddTask> {
       };
       if (_imageMachine != null) {
         _uploadFile(
-            childId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
+            subTaskId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
       }
       if (_imageSignature != null) {
         _uploadFile(
-            childId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
+            subTaskId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
       }
-      String personalContent = [formattedMonth, taskId, childId].join(SLASH);
+      String personalContent = [formattedMonth, taskId, subTaskId].join(SLASH);
       Map<String, String> personalInfo = {
         PERSONAL_INFO_FIREBASE: personalContent,
       };
 
-      _refPersonal.child(userId).child(childId).set(personalInfo);
+      _refPersonal.child(userId).child(subTaskId).set(personalInfo);
 
       Toast.show("Added new task!", context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);

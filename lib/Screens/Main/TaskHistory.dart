@@ -1,4 +1,3 @@
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,11 +29,8 @@ class _TaskHistoryState extends State<TaskHistory> {
   @override
   void initState() {
     super.initState();
-    _ref = FirebaseDatabase.instance
-        .reference()
-        .child(TASK_FIREBASE);
+    _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +43,12 @@ class _TaskHistoryState extends State<TaskHistory> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
-        title: Center(child: Text(title ,style: TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold,color: Colors.white),)),
+        title: Center(
+            child: Text(
+          title,
+          style: TextStyle(
+              fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
+        )),
         actions: <Widget>[
           Builder(
             builder: (BuildContext context) {
@@ -99,104 +100,110 @@ class _TaskHistoryState extends State<TaskHistory> {
     String taskId = widget.taskId;
     String userId = widget.userId;
     String workStatus = tasks['workStatus'];
-    String taskIdSub = tasks['taskId'].toString().length > 20
-        ? tasks['taskId'].toString().substring(0, 20) + "..."
-        : tasks['taskId'].toString();
+    String taskNameSub = tasks['taskName'].toString().length > 20
+        ? tasks['taskName'].toString().substring(0, 20) + "..."
+        : tasks['taskName'].toString();
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
       height: 115,
       color: Colors.white,
-      child: Row(
-        children: [
-          Icon(
-            Icons.assignment_outlined,
-            color: kPrimaryColor,
-            size: 50,
+      child: Row(children: [
+        Icon(
+          Icons.assignment_outlined,
+          color: kPrimaryColor,
+          size: 50,
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    width: 10,
+                  ),
+                  SelectableText(
+                    taskNameSub,
+                    onTap: () => _taskHistoryDetail(
+                        month, taskId, tasks['taskId'], userId),
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 12,
+                  ),
+                  Text(
+                    tasks['technicianName'],
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.pink,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 2,
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 12,
+                  ),
+                  Text(
+                    tasks['date'],
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.pink,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 2,
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 12,
+                  ),
+                  Text(
+                    "workStatus: $workStatus",
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.pink,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ],
           ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 10,
-                    ),
-                    SelectableText(
-                      taskIdSub,
-                      onTap: () => _taskHistoryDetail(month, taskId, tasks['taskId'], userId),
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: kPrimaryColor,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 12,
-                    ),
-                    Text(
-                      tasks['technicianName'],
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.pink,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 12,
-                    ),
-                    Text(
-                      tasks['date'],
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.pink,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 12,
-                    ),
-                    Text(
-                      "workStatus: $workStatus",
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.pink,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ]
-      ),
+        ),
+      ]),
     );
   }
 
-  void _taskHistoryDetail(String month, String taskId, String subTaskId, String userId) {
+  void _taskHistoryDetail(
+      String month, String taskId, String subTaskId, String userId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TaskHistoryDetail(month: month, taskId: taskId, subTaskId: subTaskId, userId: userId,)),
+      MaterialPageRoute(
+          builder: (context) => TaskHistoryDetail(
+                month: month,
+                taskId: taskId,
+                subTaskId: subTaskId,
+                userId: userId,
+              )),
     );
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 const kPrimaryColor = Color(0xFF57AA7B);
@@ -32,28 +31,32 @@ const ADMIN_TYPE = "Admin";
 
 const FONT_DEFAULT = 'RobotoMono';
 
-const TASK_ID_HEADER = "Task ID:                  ";
-const LAB_NAME_HEADER = "Lab Name:            ";
+const TASK_ID_HEADER =         "Task ID:        ";
+const TASK_NAME_HEADER =       "Task Name:      ";
+const LAB_NAME_HEADER =        "Lab Name:       ";
 const TECHNICIAN_NAME_HEADER = "Technician Name:";
-const TYPE_HEADER = "Type:                      ";
-const DESCRIPTION_HEADER = "Description:          ";
-const WORK_DAY_HEADER = "Work Day:             ";
-const PLACE_HEADER = "Place:                   ";
-const WORK_STATUS_HEADER = "Work Status:        ";
-const OVER_TIME_HEADER = "Over Time:            ";
-const MACHINE_IMAGE_HEADER = "Machine Image: ";
+const TYPE_HEADER =            "Type:           ";
+const DESCRIPTION_HEADER =     "Description:    ";
+const WORK_DAY_HEADER =        "Work Day:       ";
+const PLACE_HEADER =           "Place:          ";
+const WORK_STATUS_HEADER =     "Work Status:    ";
+const OVER_TIME_HEADER =       "Over Time:      ";
+const MACHINE_IMAGE_HEADER =   "Machine Image:  ";
 const SIGNATURE_IMAGE_HEADER = "Signature Image:";
 const SIGNATURE_IMAGE_TEXT = 'Signature Image';
 const MACHINE_IMAGE_TEXT = 'Machine Image';
 
 const BUTTON_CANCEL_TEXT = "Cancel";
 const BUTTON_EDIT_TEXT = "Edit";
+const BUTTON_DELETE_TEXT = "Delete";
 
+const NO_DATA = "-";
 const NO_IMAGE = "No Image";
 const EMPTY_STRING = "";
 
 // TASK Field
 const TASK_ID_FIELD = 'taskId';
+const TASK_NAME_FIELD = 'taskName';
 const LAB_NAME_FIELD = 'labName';
 const TYPE_FIELD = 'type';
 const DESCRIPTION_FIELD = 'description';
@@ -78,3 +81,5 @@ const PERSONAL_TASK_TEXT = 'Personal Task';
 const ADD_TASK_TEXT = 'Add Task';
 const USER_TEXT = 'Users';
 
+const ONE_TASK_SIZE = 1;
+const SPACE_STRING = " ";
