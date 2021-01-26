@@ -106,8 +106,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.03),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -121,6 +122,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -141,8 +143,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -156,6 +159,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.055),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -177,8 +181,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -193,6 +198,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.028),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -214,8 +220,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -230,6 +237,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.079),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -251,8 +259,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -266,6 +275,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.0575),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -286,8 +296,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -301,6 +312,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.06),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -322,8 +334,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -337,6 +350,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.078),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -358,8 +372,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -373,6 +388,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.0518),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -394,8 +410,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -409,6 +426,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.058),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -430,8 +448,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -445,6 +464,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.005),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -463,8 +483,9 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
               ),
               SizedBox(height: size.height * 0.02),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
+                  SizedBox(width: size.height * 0.05),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -478,6 +499,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: size.height * 0.005),
                   Column(
                     children: <Widget>[
                       GestureDetector(
@@ -551,7 +573,8 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                               padding: EdgeInsets.all(8.0),
                               splashColor: kPrimaryColor,
                               onPressed: () {
-                                _showMaterialDialog(userId, taskId, subTaskId, month);
+                                _showMaterialDialog(
+                                    userId, taskId, subTaskId, month);
                               },
                               child: Text(
                                 BUTTON_DELETE_TEXT,
@@ -582,30 +605,31 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
     );
   }
 
-  _showMaterialDialog(String userId, String taskId, String subTaskId, String month) {
+  _showMaterialDialog(
+      String userId, String taskId, String subTaskId, String month) {
     showDialog(
         context: context,
         builder: (BuildContext context) => new AlertDialog(
-          title: Text('Delete confirm?'),
-          content: Text('Do you want delete task?'),
-          actions: [
-            FlatButton(
-              textColor: kPrimaryColor,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('CANCEL'),
-            ),
-            FlatButton(
-              textColor: kPrimaryColor,
-              onPressed: () {
-                deleteTask(userId, taskId, subTaskId, month);
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ));
+              title: Text('Delete confirm?'),
+              content: Text('Do you want delete task?'),
+              actions: [
+                FlatButton(
+                  textColor: kPrimaryColor,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('CANCEL'),
+                ),
+                FlatButton(
+                  textColor: kPrimaryColor,
+                  onPressed: () {
+                    deleteTask(userId, taskId, subTaskId, month);
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            ));
   }
 
   void deleteTask(

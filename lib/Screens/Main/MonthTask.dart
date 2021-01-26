@@ -34,15 +34,6 @@ class _MonthTaskState extends State<MonthTask> {
     super.initState();
     _ref = FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
     initialValue(widget.month);
-    setState(() {
-      if (monthTasks.length > perPage) {
-        returnMaxNum = present + perPage;
-        present = present + perPage;
-      } else {
-        returnMaxNum = monthTasks.length;
-      }
-      itemCurrentPages.addAll(monthTasks.getRange(present, returnMaxNum));
-    });
   }
 
   Future<void> initialValue(String month) async {
@@ -56,15 +47,25 @@ class _MonthTaskState extends State<MonthTask> {
         monthTaskInfo.technician_name = value['technicianName'].toString();
         monthTaskInfo.task_size = value['taskSize'].toString();
         monthTaskInfo.task_date = value['date'].toString();
-        setState(() {
-          monthTasks.add(monthTaskInfo);
-        });
+        monthTasks.add(monthTaskInfo);
       });
+    });
+
+    setState(() {
+      monthTasks.sort((a, b) => b.task_date.compareTo(a.task_date));
+      if ((present + perPage) > monthTasks.length) {
+        itemCurrentPages
+            .addAll(monthTasks.getRange(present, monthTasks.length));
+        present = monthTasks.length;
+      } else {
+        itemCurrentPages
+            .addAll(monthTasks.getRange(present, present + perPage));
+        present = present + perPage;
+      }
     });
   }
 
   void loadMore() {
-    monthTasks.sort((a, b) => b.task_date.compareTo(a.task_date));
     setState(() {
       if ((present + perPage) > monthTasks.length) {
         itemCurrentPages
@@ -137,9 +138,7 @@ class _MonthTaskState extends State<MonthTask> {
         },
         child: ListView.builder(
             padding: const EdgeInsets.all(8),
-            itemCount: (present <= monthTasks.length)
-                ? itemCurrentPages.length + 1
-                : itemCurrentPages.length,
+            itemCount: itemCurrentPages.length,
             itemBuilder: (context, index) {
               return (index == itemCurrentPages.length)
                   ? Container(

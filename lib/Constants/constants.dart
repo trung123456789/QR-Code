@@ -49,6 +49,9 @@ const MACHINE_IMAGE_TEXT = 'Machine Image';
 const BUTTON_CANCEL_TEXT = "Cancel";
 const BUTTON_EDIT_TEXT = "Edit";
 const BUTTON_DELETE_TEXT = "Delete";
+const BUTTON_ACCEPT_TEXT = "Accept";
+const BUTTON_BACK_TEXT = 'Back';
+const BUTTON_SAVE_TEXT = 'Save';
 
 const NO_DATA = "-";
 const NO_IMAGE = "No Image";
@@ -71,15 +74,25 @@ const YOUR_NAME_FIELD = 'yourName';
 const MONTH_FIELD = 'month';
 const TASK_SIZE_FIELD = 'taskSize';
 const SORT_FIELD = 'sort';
+const YOUR_ID = 'yourId';
+const USER_TYPE = 'userType';
+const YOUR_NAME = 'yourName';
+const YOUR_PASSWORD = 'yourPassword';
+const YOUR_PHONE = 'yourPhone';
+const USER_ID = 'userId';
 
 const BACK_TO_USER_MANAGE = "Back to user manage";
 const BACK_TO_HOME = "Back to home";
 
-// BOTTOM BAR
+// SCREEN
 const ALL_TASKS_TEXT = 'All Tasks';
 const PERSONAL_TASK_TEXT = 'Personal Task';
 const ADD_TASK_TEXT = 'Add Task';
 const USER_TEXT = 'Users';
+const EDIT_TASK = 'Edit Task';
 
 const ONE_TASK_SIZE = 1;
 const SPACE_STRING = " ";
+
+const CAMERA = 'Camera';
+const GALLERY = 'Gallery';

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bqtrung.flutter_qr_scan">
    <application
-        android:label="flutter_qr_scan"
+        android:label="QR Scan Tasks"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

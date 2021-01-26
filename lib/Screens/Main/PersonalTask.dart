@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
+import 'package:flutter_qr_scan/Utils/Util.dart';
 
 import 'TaskHistoryDetail.dart';
 
@@ -36,6 +37,7 @@ class _PersonalTaskState extends State<PersonalTask> {
   @override
   void initState() {
     super.initState();
+    Util.checkUser(widget.userId, context);
     _ref = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
     _refPersonal =
         FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
@@ -78,10 +80,20 @@ class _PersonalTaskState extends State<PersonalTask> {
     }
     setState(() {
       taskInfoList.sort((a, b) => b.date.compareTo(a.date));
+      if ((present + perPage) > taskInfoList.length) {
+        itemCurrentPages
+            .addAll(taskInfoList.getRange(present, taskInfoList.length));
+        present = taskInfoList.length;
+      } else {
+        itemCurrentPages
+            .addAll(taskInfoList.getRange(present, present + perPage));
+        present = present + perPage;
+      }
     });
   }
 
   void loadMore() {
+    Util.checkUser(widget.userId, context);
     setState(() {
       if ((present + perPage) > taskInfoList.length) {
         itemCurrentPages
@@ -116,6 +128,7 @@ class _PersonalTaskState extends State<PersonalTask> {
                   Icons.qr_code,
                 ),
                 onPressed: () {
+                  Util.checkUser(widget.userId, context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -142,7 +155,16 @@ class _PersonalTaskState extends State<PersonalTask> {
           itemCount: itemCurrentPages.length,
           itemBuilder: (context, index) {
             final item = itemCurrentPages[index];
-            return Container(
+            return (index == itemCurrentPages.length) ?
+            Container(
+              color: Colors.greenAccent,
+              child: FlatButton(
+                child: Text("Load More"),
+                onPressed: () {
+                  loadMore();
+                },
+              ),
+            ) : Container(
               margin: EdgeInsets.symmetric(vertical: 5),
               padding: EdgeInsets.all(10),
               height: 115,
@@ -237,6 +259,7 @@ class _PersonalTaskState extends State<PersonalTask> {
 
   void _taskHistoryDetail(
       String month, String taskId, String subTaskId, String userId) {
+    Util.checkUser(widget.userId, context);
     Navigator.push(
       context,
       MaterialPageRoute(

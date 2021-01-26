@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_qr_scan/Constants/MessageConstants.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Models/TaskInfo.dart';
 import 'package:flutter_qr_scan/components/circle_image_container.dart';
@@ -113,8 +114,8 @@ class _EditTaskState extends State<EditTask> {
     showDialog(
         context: context,
         builder: (BuildContext bc) => new AlertDialog(
-              title: Text('Chose image'),
-              content: Text('Chose image from?'),
+              title: Text(CHOSE_IMAGE),
+              content: Text(CHOSE_IMAGE_TYPE),
               actions: [
                 FlatButton(
                   textColor: kPrimaryColor,
@@ -122,7 +123,7 @@ class _EditTaskState extends State<EditTask> {
                     _imgFromCamera(type);
                     Navigator.of(context, rootNavigator: true).pop();
                   },
-                  child: Text('Camera'),
+                  child: Text(CAMERA),
                 ),
                 FlatButton(
                   textColor: kPrimaryColor,
@@ -130,7 +131,7 @@ class _EditTaskState extends State<EditTask> {
                     _imgFromGallery(type);
                     Navigator.of(context, rootNavigator: true).pop();
                   },
-                  child: Text('Gallery'),
+                  child: Text(GALLERY),
                 ),
               ],
             ));
@@ -147,11 +148,10 @@ class _EditTaskState extends State<EditTask> {
               .child(taskID)
               .getDownloadURL()
               .then((fileURL) {
-            log("Uploaded to Storage!");
             if (child == IMAGE_MACHINE_FIELD) {
-              _refTaskUpdate.child('machineImage').set(fileURL);
+              _refTaskUpdate.child(MACHINE_IMAGE_FIELD).set(fileURL);
             } else {
-              _refTaskUpdate.child('signatureImage').set(fileURL);
+              _refTaskUpdate.child(SIGNATURE_IMAGE_FIELD).set(fileURL);
             }
           })
         });
@@ -167,15 +167,15 @@ class _EditTaskState extends State<EditTask> {
         .then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       setState(() {
-        _taskNameController.text = values['taskName'];
-        _labNameController.text = values['labName'];
-        _typeController.text = values['type'];
-        _descriptionController.text = values['description'];
-        _placeController.text = values['place'];
-        _workStatusController.text = values['workStatus'];
-        _overTimeController.text = values['overTime'];
-        machineImage = values['machineImage'];
-        signatureImage = values['signatureImage'];
+        _taskNameController.text = values[TASK_NAME_FIELD];
+        _labNameController.text = values[LAB_NAME_FIELD];
+        _typeController.text = values[TYPE_FIELD];
+        _descriptionController.text = values[DESCRIPTION_FIELD];
+        _placeController.text = values[PLACE_FIELD];
+        _workStatusController.text = values[WORK_STATUS_FIELD];
+        _overTimeController.text = values[OVER_TIME_FIELD];
+        machineImage = values[MACHINE_IMAGE_FIELD];
+        signatureImage = values[SIGNATURE_IMAGE_FIELD];
       });
     });
   }
@@ -193,7 +193,7 @@ class _EditTaskState extends State<EditTask> {
         backgroundColor: kPrimaryColor,
         title: Center(
             child: Text(
-          "Edit Task",
+          EDIT_TASK,
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
         )),
@@ -213,7 +213,7 @@ class _EditTaskState extends State<EditTask> {
                     labelText: 'Task Name'),
                 validator: (value) {
                   if (value.isEmpty) {
-                    return 'Required field! Please enter information';
+                    return REQUIRED_FIELD;
                   }
                   return null;
                 },
@@ -337,7 +337,7 @@ class _EditTaskState extends State<EditTask> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: RoundedButton(
-                  text: "Save",
+                  text: BUTTON_SAVE_TEXT,
                   press: () {
                     if (_formKey.currentState.validate()) {
                       saveTask(userId, taskId, subTaskId, month);
@@ -355,7 +355,7 @@ class _EditTaskState extends State<EditTask> {
     await _refUser.child(userId).once().then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       values.forEach((key, value) {
-        if (key == "yourName") {
+        if (key == YOUR_NAME_FIELD) {
           setState(() {
             userName = value;
           });
@@ -420,7 +420,7 @@ class _EditTaskState extends State<EditTask> {
     } else {
       _refTaskUpdate.child(SIGNATURE_IMAGE_FIELD).set(signatureImage);
     }
-    Toast.show("Edited task!", context,
+    Toast.show(EDIT_CONFIRM, context,
         duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
   }
 }

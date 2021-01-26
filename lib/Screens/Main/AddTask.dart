@@ -9,8 +9,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_qr_scan/Constants/MessageConstants.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Models/TaskInfo.dart';
+import 'package:flutter_qr_scan/Utils/Util.dart';
 import 'package:flutter_qr_scan/components/circle_image_container.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_normal_button.dart';
@@ -62,6 +64,7 @@ class _AddTaskState extends State<AddTask> {
   @override
   void initState() {
     super.initState();
+    Util.checkUser(widget.userId, context);
     _taskNameController = TextEditingController();
     _labNameController = TextEditingController();
     _typeController = TextEditingController();
@@ -110,24 +113,24 @@ class _AddTaskState extends State<AddTask> {
     showDialog(
         context: context,
         builder: (BuildContext bc) => new AlertDialog(
-              title: Text('Chose image'),
-              content: Text('Chose image from?'),
+              title: Text(CHOSE_IMAGE),
+              content: Text(CHOSE_IMAGE_TYPE),
               actions: [
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     _imgFromCamera(type);
                     Navigator.of(context, rootNavigator: true).pop();
                   },
-                  child: Text('Camera'),
+                  child: Text(CAMERA),
                 ),
                 FlatButton(
-                  textColor: Color(0xFF6200EE),
+                  textColor: kPrimaryColor,
                   onPressed: () {
                     _imgFromGallery(type);
                     Navigator.of(context, rootNavigator: true).pop();
                   },
-                  child: Text('Gallery'),
+                  child: Text(GALLERY),
                 ),
               ],
             ));
@@ -144,7 +147,6 @@ class _AddTaskState extends State<AddTask> {
               .child(taskID)
               .getDownloadURL()
               .then((fileURL) {
-            log("Uploaded to Storage!");
             if (child == IMAGE_MACHINE_FIELD) {
               _refTaskUpdate.child(MACHINE_IMAGE_FIELD).set(fileURL);
             } else {
@@ -182,7 +184,7 @@ class _AddTaskState extends State<AddTask> {
                     labelText: 'Task Name'),
                 validator: (value) {
                   if (value.isEmpty) {
-                    return 'Required field! Please enter information';
+                    return REQUIRED_FIELD;
                   }
                   return null;
                 },
@@ -263,6 +265,7 @@ class _AddTaskState extends State<AddTask> {
                       RoundedNormalButton(
                         text: MACHINE_IMAGE_TEXT,
                         press: () {
+                          Util.checkUser(widget.userId, context);
                           _showPicker(context, typeMachine);
                         },
                       ),
@@ -278,6 +281,7 @@ class _AddTaskState extends State<AddTask> {
                       RoundedNormalButton(
                         text: SIGNATURE_IMAGE_TEXT,
                         press: () {
+                          Util.checkUser(widget.userId, context);
                           _showPicker(context, typeSignature);
                         },
                       ),
@@ -298,6 +302,7 @@ class _AddTaskState extends State<AddTask> {
                 child: RoundedButton(
                   text: ADD_TASK_TEXT,
                   press: () {
+                    Util.checkUser(widget.userId, context);
                     if (_formKey.currentState.validate()) {
                       saveTask(userId);
                     }
@@ -414,7 +419,7 @@ class _AddTaskState extends State<AddTask> {
 
       _refPersonal.child(userId).child(subTaskId).set(personalInfo);
 
-      Toast.show("Added new task!", context,
+      Toast.show(ADD_CONFIRM, context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
 
       String inputCode =

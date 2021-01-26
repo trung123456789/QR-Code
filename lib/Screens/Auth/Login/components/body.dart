@@ -1,18 +1,16 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
-import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
-import 'package:flutter_qr_scan/components/notify_login.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/components/background.dart';
 import 'package:flutter_qr_scan/Screens/Main/MainScreen.dart';
+import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
 import 'package:flutter_qr_scan/components/have_not_an_account_acheck.dart';
+import 'package:flutter_qr_scan/components/notify_login.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
 import 'package:flutter_qr_scan/components/rounded_input_field.dart';
 import 'package:flutter_qr_scan/components/rounded_password_field.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../login_screen.dart';
 
 class Body extends StatefulWidget {
   final String title;

@@ -1,0 +1,14 @@
+const CAN_NOT_DELETE = "Can not delete yourself!";
+const DELETE_CONFIRM = 'Delete confirm?';
+const DELETE_CONTENT = 'Do you want delete user?';
+const LOGIN_CONFIRM = 'Logout confirm?';
+const LOGIN_CONTENT = 'Do you want logout?';
+const LOAD_MORE = 'Load More';
+const ADD_USER_TOOLTIP = 'Add user';
+const ADD_CONFIRM = 'Added new task!';
+const EDIT_CONFIRM = 'Edited task!';
+const REQUIRED_FIELD = 'Required field! Please enter information';
+const CHOSE_IMAGE = 'Chose image';
+const CHOSE_IMAGE_TYPE = 'Chose image from?';
+const EXPORT_CONFIRM = 'Export confirm?';
+const EXPORT_CONTENT = 'Do you want export data?';
