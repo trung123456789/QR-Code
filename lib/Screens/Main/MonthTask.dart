@@ -167,7 +167,7 @@ class _MonthTaskState extends State<MonthTask> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
-      height: 112,
+      height: 120,
       color: Colors.white,
       child: Row(children: [
         Icon(
@@ -190,7 +190,7 @@ class _MonthTaskState extends State<MonthTask> {
                     onTap: () =>
                         _taskHistory(month, monthTaskInfo.task_id, userId),
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         color: kPrimaryColor,
                         fontWeight: FontWeight.w600),
                   ),

@@ -198,7 +198,7 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
                       ),
                     ],
                   ),
-                  SizedBox(width: size.height * 0.028),
+                  SizedBox(width: size.height * 0.02),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[

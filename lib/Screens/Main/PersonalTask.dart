@@ -167,7 +167,7 @@ class _PersonalTaskState extends State<PersonalTask> {
             ) : Container(
               margin: EdgeInsets.symmetric(vertical: 5),
               padding: EdgeInsets.all(10),
-              height: 115,
+              height: 120,
               child: Row(children: [
                 Icon(
                   Icons.assignment_outlined,
@@ -182,10 +182,12 @@ class _PersonalTaskState extends State<PersonalTask> {
                       Row(
                         children: [
                           SizedBox(
-                            width: 10,
+                            width: 12,
                           ),
                           SelectableText(
-                            item.subTaskId,
+                            item.subTaskId.toString().length > 20
+                                ? item.subTaskId.toString().substring(0, 20) + "..."
+                                : item.subTaskId.toString(),
                             onTap: () => _taskHistoryDetail(item.month,
                                 item.taskId, item.subTaskId, userId),
                             style: TextStyle(
