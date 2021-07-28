@@ -81,9 +81,11 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
 
   displayImage(String imageNetwork) {
     if (imageNetwork != NO_IMAGE) {
-      return Image.network(imageNetwork);
+      return InteractiveViewer(child: Image.network(imageNetwork));
     }
-    return Container(child: Image.asset("assets/images/no_image.png"));
+    return Container(
+        child: InteractiveViewer(
+            child: Image.asset("assets/images/no_image.png")));
   }
 
   @override
@@ -612,13 +614,11 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
 
     CollectionReference task = FirebaseFirestore.instance.collection('Tasks');
     if (taskId != null) {
-      task
-          .doc(taskId)
-          .delete();
-          // .then((value) => Toast.show("Deleted task!", context,
-          //     duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM))
-          // .catchError((error) => Toast.show("Delete task failed!", context,
-          //     duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM));
+      task.doc(taskId).delete();
+      // .then((value) => Toast.show("Deleted task!", context,
+      //     duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM))
+      // .catchError((error) => Toast.show("Delete task failed!", context,
+      //     duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM));
     }
 
     querySnapshot.docs.forEach((doc) {});
@@ -641,8 +641,12 @@ class _TaskHistoryDetailState extends State<TaskHistoryDetail> {
             }
         });
 
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
-        MainScreen(userId: userId,)), (Route<dynamic> route) => false);
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => MainScreen(
+                  userId: userId,
+                )),
+        (Route<dynamic> route) => false);
     // Navigator.push(
     //   context,
     //   MaterialPageRoute(builder: (_) {

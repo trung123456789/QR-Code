@@ -166,17 +166,20 @@ class _EditTaskState extends State<EditTask> {
 
   displayImage(PickedFile pickedFile, String imageNetwork) {
     if (pickedFile != null) {
-      return Container(
+      return InteractiveViewer(
+          child: Container(
         child: Image.file(
           File(pickedFile.path),
           fit: BoxFit.fitWidth,
         ),
-      );
+      ));
     }
     if (imageNetwork != NO_IMAGE) {
       return Image.network(imageNetwork);
     }
-    return Container(child: Image.asset("assets/images/no_image.png"));
+    return Container(
+        child: InteractiveViewer(
+            child: Image.asset("assets/images/no_image.png")));
   }
 
   @override

@@ -157,14 +157,17 @@ class _AddTaskState extends State<AddTask> {
 
   displayImage(PickedFile pickedFile) {
     if (pickedFile != null) {
-      return Container(
+      return InteractiveViewer(
+          child: Container(
         child: Image.file(
           File(pickedFile.path),
           fit: BoxFit.fitWidth,
         ),
-      );
+      ));
     }
-    return Container(child: Image.asset("assets/images/no_image.png"));
+    return Container(
+        child: InteractiveViewer(
+            child: Image.asset("assets/images/no_image.png")));
   }
 
   @override
