@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Screens/Auth/Login/login_screen.dart';
@@ -7,17 +9,26 @@ import 'Screens/Main/MainScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: kPrimaryColor, systemNavigationBarColor: kPrimaryColor));
   await Firebase.initializeApp();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var userId = prefs.getString('userId');
-  runApp(MaterialApp(home: userId == null ? LoginScreen() : MainScreen(userId: userId,)));
+  runApp(MaterialApp(
+      home: userId == null
+          ? LoginScreen()
+          : MainScreen(
+              userId: userId,
+            )));
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return SafeArea(
+        child:
+        MaterialApp(
       title: 'QR Scan',
       theme: ThemeData(
         // This is the theme of your application.
@@ -32,6 +43,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginScreen(),
-    );
+    ));
   }
 }

@@ -189,12 +189,11 @@ class _EditTaskState extends State<EditTask> {
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
         centerTitle: true,
-        title: Center(
-            child: Text(
+        title: Text(
           EDIT_TASK,
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
-        )),
+        ),
         elevation: 50.0,
         brightness: Brightness.dark,
       ),
