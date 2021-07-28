@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
@@ -27,10 +28,8 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  final TextEditingController _yourIDController = TextEditingController();
-  final TextEditingController _yourPasswordController = TextEditingController();
-  DatabaseReference _refUserInfo =
-      FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool visibility = false;
 
   @override
@@ -56,12 +55,12 @@ class _BodyState extends State<Body> {
             ),
             SizedBox(height: size.height * 0.03),
             RoundedInputField(
-              controller: _yourIDController,
-              hintText: "Your ID",
+              controller: _idController,
+              hintText: "ID",
               onChanged: (value) {},
             ),
             RoundedPasswordField(
-              controller: _yourPasswordController,
+              controller: _passwordController,
               onChanged: (value) {},
             ),
             visibility ? NotifyLogin(
@@ -105,29 +104,37 @@ class _BodyState extends State<Body> {
   }
 
   void goToMainScreen() {
-    String yourId = _yourIDController.text;
-    String yourPassword = _yourPasswordController.text;
-
-    _refUserInfo.child(yourId).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      if (values != null && values['yourPassword'] == yourPassword) {
-        setAuthority(yourId);
+    String id = _idController.text;
+    String password = _passwordController.text;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    firestore
+        .collection('User')
+        .where('login_id', isEqualTo: id)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
         setState(() {
-          visibility = false;
+          if (doc != null && doc.get('password') == password) {
+            setAuthority(id);
+            setState(() {
+              visibility = false;
+            });
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return MainScreen(userId: id,);
+                },
+              ),
+            );
+          } else {
+            setState(() {
+              visibility = true;
+            });
+          }
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return MainScreen(userId: yourId,);
-            },
-          ),
-        );
-      } else {
-        setState(() {
-          visibility = true;
-        });
-      }
+      });
     });
   }
 }

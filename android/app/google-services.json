@@ -30,6 +30,13 @@
             {
               "client_id": "391454212378-nvr245fstjpuntgb9vd33vs5u2cfthnv.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "391454212378-gi2fdclbjqop8qfmps22hh4d6jp7du9q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bqtrung.flutterQrScan"
+              }
             }
           ]
         }

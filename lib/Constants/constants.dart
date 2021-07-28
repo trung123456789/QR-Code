@@ -4,11 +4,14 @@ const kPrimaryColor = Color(0xFF57AA7B);
 const kPrimaryColorText = Color(0xFF064c65);
 const kNormalColor = Color.fromARGB(255, 17, 150, 217);
 const kPrimaryLightColor = Color(0xFFF1E6FF);
+const Color CALENDAR_COLOR = Color(0xFFF9F9FB);
+const Color HEADER_BACKGROUND_TOP = Color(0xFFD4E7FE);
 
 const typeMachine = 0;
 const typeSignature = 1;
 
 //Format
+const String MONTH_NAME_FORMAT = 'MMM';
 const FORMAT_MONTH = 'yyyy-MM';
 const FORMAT_DATE_TIME = 'yyyy-MM-dd hh:mm:ss';
 
@@ -58,22 +61,23 @@ const NO_IMAGE = "No Image";
 const EMPTY_STRING = "";
 
 // TASK Field
-const TASK_ID_FIELD = 'taskId';
-const TASK_NAME_FIELD = 'taskName';
-const LAB_NAME_FIELD = 'labName';
+const TASK_ID_FIELD = 'task_id';
+const TASK_NAME_FIELD = 'task_name';
+const LAB_NAME_FIELD = 'lab_name';
 const TYPE_FIELD = 'type';
 const DESCRIPTION_FIELD = 'description';
 const PLACE_FIELD = 'place';
-const WORK_STATUS_FIELD = 'workStatus';
-const OVER_TIME_FIELD = 'overTime';
-const TECHNICIAN_NAME_FIELD = 'technicianName';
-const DATE_FIELD = 'date';
-const MACHINE_IMAGE_FIELD = 'machineImage';
-const SIGNATURE_IMAGE_FIELD = 'signatureImage';
+const WORK_STATUS_FIELD = 'work_status';
+const OVER_TIME_FIELD = 'over_time';
+const TECHNICIAN_NAME_FIELD = 'technicican_name';
+const DATE_FIELD = 'updated_at';
+const MACHINE_IMAGE_FIELD = 'machine_image';
+const SIGNATURE_IMAGE_FIELD = 'signature_image';
 const YOUR_NAME_FIELD = 'yourName';
 const MONTH_FIELD = 'month';
 const TASK_SIZE_FIELD = 'taskSize';
 const SORT_FIELD = 'sort';
+const USER_ID_FIELD = 'user_id';
 const YOUR_ID = 'yourId';
 const USER_TYPE = 'userType';
 const YOUR_NAME = 'yourName';
@@ -96,3 +100,7 @@ const SPACE_STRING = " ";
 
 const CAMERA = 'Camera';
 const GALLERY = 'Gallery';
+
+const CALENDAR = 'Calendar';
+const CHOICE = 'Choice';
+const String TO_DAY = 'Today';

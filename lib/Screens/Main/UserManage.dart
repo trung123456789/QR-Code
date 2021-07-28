@@ -1,10 +1,9 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/MessageConstants.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
-import 'package:flutter_qr_scan/Models/UserInfo.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Auth/SignUp/signup_screen.dart';
 import 'package:flutter_qr_scan/Utils/Util.dart';
@@ -26,66 +25,79 @@ class UserManage extends StatefulWidget {
 }
 
 class UserManageState extends State<UserManage> {
-  Query _ref;
-  DatabaseReference _refUserInfo =
-      FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
   bool adminAuth = false;
 
-  int present = 0;
-  int perPage = 15;
-  int returnMaxNum = 0;
-
-  List allUsers = [];
-  List itemCurrentPages = [];
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  List<DocumentSnapshot> users = [];
+  bool isLoading = false;
+  bool hasMore = true;
+  int userLimit = 20;
+  DocumentSnapshot lastUser;
+  static ScrollController _scrollController;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Util.checkUser(widget.userId, context);
-    _ref = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
     if (widget.userId != null) {
       checkAuthority(widget.userId);
     }
-    initialValue();
+
+    _scrollController = ScrollController();
+    getUser();
+
+    _scrollController.addListener(() {
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double currentScroll = _scrollController.position.pixels;
+      double delta = MediaQuery.of(context).size.height * 0.20;
+      if (maxScroll - currentScroll <= delta) {
+        getUser();
+      }
+    });
   }
 
-  Future<void> initialValue() async {
-    Query _refExcu = _ref.orderByChild(SORT_FIELD);
-    await _refExcu.once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        UserInfo userInfo = new UserInfo();
-        userInfo.user_type = value[USER_TYPE].toString();
-        userInfo.your_id = value[YOUR_ID].toString();
-        userInfo.your_name = value[YOUR_NAME].toString();
-        userInfo.your_password = value[YOUR_PASSWORD].toString();
-        userInfo.your_phone = value[YOUR_PHONE].toString();
-        allUsers.add(userInfo);
+  getUser() async {
+    if (!hasMore) {
+      print('No More User');
+      return;
+    }
+    if (isLoading) {
+      return;
+    }
+    setState(() {
+      isLoading = true;
+    });
+    QuerySnapshot querySnapshot;
+    if (lastUser == null) {
+      querySnapshot = await firestore
+          .collection('User')
+          .orderBy('user_name')
+          .limit(userLimit)
+          .get();
+    } else {
+      querySnapshot = await firestore
+          .collection('User')
+          .orderBy('user_name')
+          .startAfterDocument(lastUser)
+          .limit(userLimit)
+          .get();
+      print(1);
+    }
+    if (querySnapshot.docs.length == 0) {
+      hasMore = false;
+      setState(() {
+        isLoading = false;
       });
-    });
+      return;
+    }
 
+    if (querySnapshot.docs.length < userLimit) {
+      hasMore = false;
+    }
+    lastUser = querySnapshot.docs[querySnapshot.docs.length - 1];
+    users.addAll(querySnapshot.docs);
     setState(() {
-      allUsers.sort((a, b) => b.your_name.compareTo(a.your_name));
-      if ((present + perPage) > allUsers.length) {
-        itemCurrentPages.addAll(allUsers.getRange(present, allUsers.length));
-        present = allUsers.length;
-      } else {
-        itemCurrentPages.addAll(allUsers.getRange(present, present + perPage));
-        present = present + perPage;
-      }
-    });
-  }
-
-  void loadMore() {
-    setState(() {
-      if ((present + perPage) > allUsers.length) {
-        itemCurrentPages.addAll(allUsers.getRange(present, allUsers.length));
-        present = allUsers.length;
-      } else {
-        itemCurrentPages.addAll(allUsers.getRange(present, present + perPage));
-        present = present + perPage;
-      }
+      isLoading = false;
     });
   }
 
@@ -94,6 +106,7 @@ class UserManageState extends State<UserManage> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: kPrimaryColor,
+          centerTitle: true,
           title: Center(
               child: Text(
             USER_TEXT,
@@ -133,37 +146,41 @@ class UserManageState extends State<UserManage> {
           ),
           brightness: Brightness.dark,
         ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification scrollInfo) {
-            if (scrollInfo.metrics.pixels ==
-                scrollInfo.metrics.maxScrollExtent) {
-              loadMore();
-            }
-          },
-          child: ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: (present <= allUsers.length)
-                  ? itemCurrentPages.length + 1
-                  : itemCurrentPages.length,
-              itemBuilder: (context, index) {
-                return (index == itemCurrentPages.length)
-                    ? Container(
-                        color: Colors.greenAccent,
-                        child: FlatButton(
-                          child: Text(LOAD_MORE),
-                          onPressed: () {
-                            loadMore();
-                          },
-                        ),
-                      )
-                    : _buildUserInfoItem(
-                        userInfo: itemCurrentPages[index],
+        body: SafeArea(
+            child: Column(children: [
+          Expanded(
+            child: users.length == 0
+                ? Center(
+                    child: Text('No Data...'),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      return _buildUserInfoItem(
+                        userInfo: users[index],
                       );
-              }),
-        ));
+                    }),
+          ),
+          isLoading
+              ? Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(5),
+                  child: Text(
+                    'Loading...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                )
+              : Container()
+        ])));
   }
 
   _showMaterialDialog() {
+    Util.checkUser(widget.userId, context);
     showDialog(
         context: context,
         builder: (BuildContext context) => new AlertDialog(
@@ -181,10 +198,12 @@ class UserManageState extends State<UserManage> {
                   textColor: kPrimaryColor,
                   onPressed: () {
                     deleteLoggedIn();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
+                    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                        LoginScreen()), (Route<dynamic> route) => false);
+                    // Navigator.pushReplacement(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => LoginScreen()),
+                    // );
                   },
                   child: Text(BUTTON_ACCEPT_TEXT),
                 ),
@@ -192,7 +211,7 @@ class UserManageState extends State<UserManage> {
             ));
   }
 
-  Widget _buildUserInfoItem({UserInfo userInfo}) {
+  Widget _buildUserInfoItem({DocumentSnapshot userInfo}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
@@ -215,7 +234,7 @@ class UserManageState extends State<UserManage> {
                     width: 10,
                   ),
                   Text(
-                    userInfo.your_name,
+                    userInfo.get('user_name'),
                     style: TextStyle(
                         fontSize: 18,
                         color: kPrimaryColor,
@@ -232,7 +251,7 @@ class UserManageState extends State<UserManage> {
                     width: 35,
                   ),
                   Text(
-                    userInfo.user_type,
+                    userInfo.get('user_type'),
                     style: TextStyle(
                         fontSize: 14,
                         color: Colors.pink,
@@ -253,7 +272,8 @@ class UserManageState extends State<UserManage> {
                 ),
                 highlightColor: Colors.pink,
                 onPressed: () {
-                  _showDeleteConfirmDialog(userInfo.your_id, widget.userId);
+                  _showDeleteConfirmDialog(
+                      userInfo.get('login_id'), widget.userId);
                 },
               )
             : new Container(),
@@ -263,27 +283,36 @@ class UserManageState extends State<UserManage> {
 
   // Remove the selected item from the list model.
   void _onClickDeleteUser(String id) {
+    CollectionReference user = FirebaseFirestore.instance.collection('User');
     if (id != null) {
-      FirebaseDatabase.instance
-          .reference()
-          .child(USER_INFO_FIREBASE)
-          .child(id)
-          .remove();
+      user
+          .doc(id)
+          .delete()
+          .then((value) => Toast.show("Deleted user!", context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM))
+          .catchError((error) => Toast.show("Delete user failed!", context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM));
     }
   }
 
   Future<void> checkAuthority(String userId) async {
-    await _refUserInfo.child(userId).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      if (values != null && values[USER_TYPE] == ADMIN_TYPE) {
-        setState(() {
-          adminAuth = true;
-        });
-      } else {
-        setState(() {
-          adminAuth = false;
-        });
-      }
+    CollectionReference user = FirebaseFirestore.instance.collection('User');
+    user
+        .where('login_id', isEqualTo: userId)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        if (doc.get("user_type") == ADMIN_TYPE) {
+          setState(() {
+            adminAuth = true;
+          });
+        } else {
+          setState(() {
+            adminAuth = false;
+          });
+        }
+      });
     });
   }
 
@@ -322,5 +351,6 @@ class UserManageState extends State<UserManage> {
   Future<void> deleteLoggedIn() async {
     SharedPreferences prefrences = await SharedPreferences.getInstance();
     prefrences.remove(USER_ID);
+    var userId = prefrences.getString('userId');
   }
 }

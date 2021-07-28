@@ -4,6 +4,9 @@ import 'package:flutter_qr_scan/Screens/Main/AddTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/AllTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/PersonalTask.dart';
 import 'package:flutter_qr_scan/Screens/Main/UserManage.dart';
+import 'package:flutter_qr_scan/navigation_bar/navigation_bar.dart';
+
+import '../Constants/constants.dart';
 
 class BottomMenuBar extends StatefulWidget {
   final int idx;
@@ -22,7 +25,7 @@ class BottomMenuBar extends StatefulWidget {
 }
 
 class _BottomMenuBarState extends State<BottomMenuBar> {
-  int _currentIndex = 0;
+  int _selectedItem = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -48,52 +51,21 @@ class _BottomMenuBarState extends State<BottomMenuBar> {
     ];
 
     return Scaffold(
-      body: _children[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        onTap: onTabTapped,
-        backgroundColor: Colors.white,
-        currentIndex: _currentIndex,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.people,
-            ),
-            title: Text(
-              ALL_TASKS_TEXT,
-            ),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-            ),
-            title: Text(
-              PERSONAL_TASK_TEXT,
-            ),
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.playlist_add_rounded,
-              ),
-              title: Text(
-                ADD_TASK_TEXT,
-              )),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.portrait_rounded,
-            ),
-            title: Text(
-              USER_TEXT,
-            ),
-          )
+      body: _children[_selectedItem],
+      bottomNavigationBar: CustomBottomNavigationBar(
+        iconList: [
+          Icons.people,
+          Icons.person,
+          Icons.playlist_add_rounded,
+          Icons.portrait_rounded
         ],
+        onChange: (val) {
+          setState(() {
+            _selectedItem = val;
+          });
+        },
+        defaultSelectedIndex: 0,
       ),
     );
-  }
-
-  void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
   }
 }

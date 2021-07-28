@@ -1,23 +1,35 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Util {
   static Future<void> checkUser(String userId, BuildContext context) async {
-    DatabaseReference _refUserInfo =
-        FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var userIdOnstore = prefs.getString('userId');
 
-    Query _refExcu = _refUserInfo.child(userId);
-    await _refExcu.once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      if (values == null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      }
+    if (userIdOnstore == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+
+    CollectionReference user = FirebaseFirestore.instance.collection('User');
+    user
+        .where('login_id', isEqualTo: userId)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        if (!doc.exists) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
+      });
     });
   }
 }

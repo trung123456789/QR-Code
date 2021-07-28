@@ -5,8 +5,10 @@ import 'package:flutter_qr_scan/Constants/constants.dart';
 
 class CircularImageFirebase extends StatelessWidget {
   final String _image;
+  final double _width;
+  final double _height;
 
-  CircularImageFirebase(this._image);
+  CircularImageFirebase(this._image, this._width, this._height);
 
   @override
   Widget build(BuildContext context) {
@@ -14,18 +16,18 @@ class CircularImageFirebase extends StatelessWidget {
         ? ClipRRect(
             child: Image.network(
               _image,
-              width: 200,
-              height: 100,
+              width: _width,
+              height: _height,
               fit: BoxFit.fitWidth,
             ),
           )
         : Container(
-            width: 200,
-            height: 100,
+            width: _width,
+            height: _height,
             child: Image.asset(
               "assets/images/no_image.png",
-              width: 200,
-              height: 100,
+              width: _width,
+              height: _height,
               fit: BoxFit.cover,
             ),
           );

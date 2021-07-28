@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Main/MainScreen.dart';
-import 'package:flutter_qr_scan/Screens/Main/TaskHistory.dart';
+import 'package:flutter_qr_scan/Screens/Main/PersonalTask.dart';
+import 'package:flutter_qr_scan/Screens/Main/TaskHistoryDetail.dart';
+import 'package:flutter_qr_scan/Screens/QrScan/qr_task_view.dart';
 import 'package:flutter_qr_scan/components/back_to_home.dart';
 import 'package:flutter_qr_scan/components/rounded_pink_button.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
+// import 'package:qrscan/qrscan.dart' as scanner;
 
 import 'background.dart';
 
@@ -49,21 +51,23 @@ class ScanMain extends StatelessWidget {
               RoundedPinkButton(
                 text: "SCAN QR CODE",
                 press: () {
-                  _scan(context);
+                  // _scan(context);
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => QRTaskView(userId: userId,),
+                  ));
                 },
               ),
               SizedBox(height: size.height * 0.02),
               BackToHome(
                 login: false,
                 press: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return text == LOGIN_CHECK ? LoginScreen() : MainScreen(userId: userId,);
-                      },
-                    ),
-                  );
+                  if (text == LOGIN_CHECK) {
+                    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                        LoginScreen()), (Route<dynamic> route) => false);
+                  } else {
+                    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                        MainScreen(userId: userId,)), (Route<dynamic> route) => false);
+                  }
                 },
               ),
             ],
@@ -74,17 +78,16 @@ class ScanMain extends StatelessWidget {
   }
 
   Future _scan(BuildContext context) async {
-    String barcode = await scanner.scan();
-    var infoQr = barcode.split(SLASH);
-    String hashCode = infoQr[0];
-    String month = infoQr[1];
-    String taskId = infoQr[2];
-
-    if (hashCode == QR_MATCH_CODE) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => TaskHistory(month: month, taskId: taskId, userId: userId,)),
-      );
-    }
+    // String barcode = await scanner.scan();
+    // var infoQr = barcode.split(SLASH);
+    // String hashCode = infoQr[0];
+    // String taskId = infoQr[1];
+    //
+    // if (hashCode == QR_MATCH_CODE) {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => TaskHistoryDetail(taskId: taskId, userId: userId,)),
+    //   );
+    // }
   }
 }

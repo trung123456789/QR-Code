@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CircularImage extends StatelessWidget {
-  final File _image;
+  final PickedFile _image;
 
   CircularImage(this._image);
 
@@ -12,19 +13,19 @@ class CircularImage extends StatelessWidget {
     return _image != null
         ? ClipRRect(
             child: Image.file(
-              _image,
-              width: 100,
-              height: 100,
+              File(_image.path),
+              width: 300,
+              height: 150,
               fit: BoxFit.fitHeight,
             ),
           )
         : Container(
-            width: 100,
-            height: 100,
+            width: 300,
+            height: 150,
             child: Image.asset(
               "assets/images/no_image.png",
-              width: 100,
-              height: 100,
+              width: 300,
+              height: 150,
               fit: BoxFit.fitHeight,
             ),
           );

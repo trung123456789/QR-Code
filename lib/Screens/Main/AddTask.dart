@@ -1,8 +1,8 @@
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,12 +14,14 @@ import 'package:flutter_qr_scan/Constants/constants.dart';
 import 'package:flutter_qr_scan/Models/TaskInfo.dart';
 import 'package:flutter_qr_scan/Utils/Util.dart';
 import 'package:flutter_qr_scan/components/circle_image_container.dart';
+import 'package:flutter_qr_scan/components/photo_view_page.dart';
 import 'package:flutter_qr_scan/components/rounded_button.dart';
-import 'package:flutter_qr_scan/components/rounded_normal_button.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:qr_flutter/qr_flutter.dart';
+
+// import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:toast/toast.dart';
 
 import 'MainScreen.dart';
@@ -44,10 +46,6 @@ class _AddTaskState extends State<AddTask> {
   GlobalKey globalKey = new GlobalKey();
   TaskInfo taskInfo = new TaskInfo();
   final DateTime now = DateTime.now();
-  final DateFormat formatterMonth = DateFormat(FORMAT_MONTH);
-  final DateFormat formatterDate = DateFormat(FORMAT_DATE_TIME);
-  String formattedMonth;
-  String formattedDate;
   var epochTime;
 
   TextEditingController _taskNameController,
@@ -57,9 +55,14 @@ class _AddTaskState extends State<AddTask> {
       _placeController,
       _workStatusController,
       _overTimeController;
-  File _imageMachine, _imageSignature;
-  DatabaseReference _refTasks, _refMonth, _refLastTask, _refUser, _refPersonal;
+
+  String userName;
   Reference _refStorage;
+  PickedFile _imageSignature;
+  PickedFile _imageMachine;
+  final ImagePicker _picker = ImagePicker();
+  String taskId;
+  String direc;
 
   @override
   void initState() {
@@ -72,39 +75,35 @@ class _AddTaskState extends State<AddTask> {
     _placeController = TextEditingController();
     _workStatusController = TextEditingController();
     _overTimeController = TextEditingController();
-    _refTasks = FirebaseDatabase.instance.reference().child(TASK_FIREBASE);
-    _refLastTask =
-        FirebaseDatabase.instance.reference().child(LAST_TASK_FIREBASE);
-    _refMonth = FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
-    _refUser = FirebaseDatabase.instance.reference().child(USER_INFO_FIREBASE);
-    _refPersonal =
-        FirebaseDatabase.instance.reference().child(PERSONAL_INFO_FIREBASE);
+
     _refStorage = FirebaseStorage.instance.ref();
-    formattedMonth = formatterMonth.format(now);
-    formattedDate = formatterDate.format(now);
+
     epochTime = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
+    taskId = int.parse(epochTime).toString();
+    getUserName(widget.userId);
+    direc = _getDirectory();
   }
 
   _imgFromCamera(int type) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.getImage(source: ImageSource.camera);
 
     setState(() {
       if (type == typeMachine) {
-        _imageMachine = image;
+        _imageMachine = pickedFile;
       } else {
-        _imageSignature = image;
+        _imageSignature = pickedFile;
       }
     });
   }
 
   _imgFromGallery(int type) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.getImage(source: ImageSource.gallery);
 
     setState(() {
       if (type == typeMachine) {
-        _imageMachine = image;
+        _imageMachine = pickedFile;
       } else {
-        _imageSignature = image;
+        _imageSignature = pickedFile;
       }
     });
   }
@@ -136,10 +135,10 @@ class _AddTaskState extends State<AddTask> {
             ));
   }
 
-  _uploadFile(String taskID, File _image, String child,
-      DatabaseReference _refTaskUpdate) async {
+  _uploadFile(String taskID, PickedFile _image, String child) async {
+    CollectionReference task = FirebaseFirestore.instance.collection('Tasks');
     UploadTask uploadTask =
-        _refStorage.child(child).child(taskID).putFile(_image);
+        _refStorage.child(child).child(taskID).putFile(File(_image.path));
 
     await uploadTask.whenComplete(() => {
           _refStorage
@@ -148,21 +147,35 @@ class _AddTaskState extends State<AddTask> {
               .getDownloadURL()
               .then((fileURL) {
             if (child == IMAGE_MACHINE_FIELD) {
-              _refTaskUpdate.child(MACHINE_IMAGE_FIELD).set(fileURL);
+              task.doc(taskID).update({'machine_image': fileURL});
             } else {
-              _refTaskUpdate.child(SIGNATURE_IMAGE_FIELD).set(fileURL);
+              task.doc(taskID).update({'signature_image': fileURL});
             }
           })
         });
+  }
+
+  displayImage(PickedFile pickedFile) {
+    if (pickedFile != null) {
+      return Container(
+        child: Image.file(
+          File(pickedFile.path),
+          fit: BoxFit.fitWidth,
+        ),
+      );
+    }
+    return Container(child: Image.asset("assets/images/no_image.png"));
   }
 
   @override
   Widget build(BuildContext context) {
     String userId = widget.userId;
     Size size = MediaQuery.of(context).size;
+    final bodyHeight = size.height - MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
+        centerTitle: true,
         title: Center(
             child: Text(
           ADD_TASK_TEXT,
@@ -248,55 +261,128 @@ class _AddTaskState extends State<AddTask> {
                 },
               ),
               SizedBox(height: size.height * 0.03),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        MACHINE_IMAGE_TEXT,
-                        style: TextStyle(
-                            color: kPrimaryColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.3),
-                      ),
-                      RoundedNormalButton(
-                        text: MACHINE_IMAGE_TEXT,
-                        press: () {
-                          Util.checkUser(widget.userId, context);
-                          _showPicker(context, typeMachine);
-                        },
-                      ),
-                      SizedBox(height: size.height * 0.03),
-                      Text(
-                        SIGNATURE_IMAGE_TEXT,
-                        style: TextStyle(
-                            color: kPrimaryColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.3),
-                      ),
-                      RoundedNormalButton(
-                        text: SIGNATURE_IMAGE_TEXT,
-                        press: () {
-                          Util.checkUser(widget.userId, context);
-                          _showPicker(context, typeSignature);
-                        },
-                      ),
-                    ],
+                  Container(
+                      child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: kPrimaryColor.withOpacity(0.2),
+                          ),
+                          margin: EdgeInsets.only(left: 20),
+                          child: Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () => {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              displayImage(_imageMachine)))
+                                },
+                                child: _imageMachine != null
+                                    ? CircularImage(_imageMachine)
+                                    : Image.asset(
+                                        "assets/images/no_image.png",
+                                        fit: BoxFit.cover,
+                                        height: 150,
+                                        width: 300,
+                                      ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                left: 0,
+                                height: 33,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _showPicker(context, typeMachine),
+                                  child: Container(
+                                    alignment: Alignment.centerRight,
+                                    margin: EdgeInsets.only(right: 5),
+                                    height: 20,
+                                    width: 30,
+                                    child: Icon(
+                                      Icons.photo_camera,
+                                      color: kPrimaryColor,
+                                      size: 25,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ))),
+                  SizedBox(
+                    height: 15,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      CircularImage(_imageMachine),
-                      SizedBox(height: size.height * 0.03),
-                      CircularImage(_imageSignature),
-                    ],
-                  ),
+                  Container(
+                      child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: kPrimaryColor.withOpacity(0.2),
+                          ),
+                          margin: EdgeInsets.only(left: 20),
+                          child: Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () => {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              displayImage(_imageSignature)))
+                                },
+                                child: _imageSignature != null
+                                    ? CircularImage(_imageSignature)
+                                    : Image.asset(
+                                        "assets/images/no_image.png",
+                                        fit: BoxFit.cover,
+                                        height: 150,
+                                        width: 300,
+                                      ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                left: 0,
+                                height: 33,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _showPicker(context, typeSignature),
+                                  child: Container(
+                                    alignment: Alignment.centerRight,
+                                    margin: EdgeInsets.only(right: 5),
+                                    height: 20,
+                                    width: 30,
+                                    child: Icon(
+                                      Icons.photo_camera,
+                                      color: kPrimaryColor,
+                                      size: 25,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ))),
                 ],
               ),
+              SizedBox(
+                height: 25,
+              ),
+              Center(
+                child: RepaintBoundary(
+                  key: globalKey,
+                  child: QrImage(
+                    data: QR_MATCH_CODE + SLASH + taskId,
+                    size: 0.3 * bodyHeight,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Text(direc),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: RoundedButton(
@@ -314,7 +400,24 @@ class _AddTaskState extends State<AddTask> {
     );
   }
 
+  void getUserName(String userId) async {
+    CollectionReference user = FirebaseFirestore.instance.collection('User');
+    user
+        .where('login_id', isEqualTo: userId)
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        setState(() {
+          userName = doc.get('user_name');
+        });
+      });
+    });
+  }
+
   void saveTask(String userId) {
+    CollectionReference task = FirebaseFirestore.instance.collection('Tasks');
+    CollectionReference month = FirebaseFirestore.instance.collection('Months');
     String taskName = _taskNameController.text;
     String labName = _labNameController.text;
     String type = _typeController.text;
@@ -323,28 +426,11 @@ class _AddTaskState extends State<AddTask> {
     String workStatus = _workStatusController.text;
     String overTime = _overTimeController.text;
 
-    String taskId = int.parse(epochTime).toString();
-    String subTaskId = taskId + DASH + int.parse(epochTime).toString();
-    var sort = int.parse(epochTime) * -1;
-    int monthSize = 0;
-    int taskSize = 0;
-    String userName;
-    var childName = taskName + DASH + epochTime;
-    DatabaseReference _refTaskUpdate =
-        _refTasks.child(formattedMonth).child(taskId).child(subTaskId);
+    final DateFormat formatter = DateFormat('yyyy-MM');
 
-    _refUser.child(userId).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        if (key == YOUR_NAME_FIELD) {
-          userName = value;
-        }
-      });
-    });
-
-    Map<String, String> task = {
-      TASK_ID_FIELD: subTaskId,
-      TASK_NAME_FIELD: childName,
+    Map<String, Object> taskData = {
+      TASK_ID_FIELD: taskId,
+      TASK_NAME_FIELD: taskName,
       LAB_NAME_FIELD: labName,
       TECHNICIAN_NAME_FIELD: userName,
       TYPE_FIELD: type,
@@ -354,101 +440,79 @@ class _AddTaskState extends State<AddTask> {
       OVER_TIME_FIELD: overTime,
       MACHINE_IMAGE_FIELD: NO_IMAGE,
       SIGNATURE_IMAGE_FIELD: NO_IMAGE,
-      DATE_FIELD: formattedDate,
-      SORT_FIELD: sort.toString(),
+      USER_ID_FIELD: userId,
+      DATE_FIELD: now,
     };
+    task
+        .doc(taskId)
+        .set(taskData)
+        .then((value) => print('Task Added'))
+        .catchError((error) => print("Failed to add user: $error"));
 
-    // Added task
-    _refTasks.child(formattedMonth).child(taskId).child(subTaskId).set(task);
+    // Update month
+    month.doc(formatter.format(now)).get().then((doc) => {
+          if (doc.exists)
+            {
+              month
+                  .where('name', isEqualTo: formatter.format(now))
+                  .limit(1)
+                  .get()
+                  .then((QuerySnapshot querySnapshot) {
+                querySnapshot.docs.forEach((doc) {
+                  var taskNum = doc.get('tasks');
+                  month
+                      .doc(formatter.format(now))
+                      .update({'tasks': taskNum + 1, 'updated_at': now});
+                });
+              })
+            }
+          else
+            {
+              month.doc(formatter.format(now)).set({
+                'name': formatter.format(now),
+                'tasks': 1,
+                'updated_at': now
+              })
+            }
+        });
+    _captureAndSharePng(taskId);
 
-    _refTasks
-        .child(formattedMonth)
-        .child(taskId)
-        .once()
-        .then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        taskSize += 1;
-      });
+    if (_imageMachine != null) {
+      _uploadFile(taskId, _imageMachine, IMAGE_MACHINE_FIELD);
+    }
+    if (_imageSignature != null) {
+      _uploadFile(taskId, _imageSignature, IMAGE_SIGNATURE_FIELD);
+    }
+    Toast.show(ADD_CONFIRM, context,
+        duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
 
-      Map<String, String> lastTask = {
-        TASK_ID_FIELD: taskId,
-        TASK_NAME_FIELD: taskName,
-        LAB_NAME_FIELD: labName,
-        TECHNICIAN_NAME_FIELD: userName,
-        DATE_FIELD: formattedDate,
-        SORT_FIELD: sort.toString(),
-        TASK_SIZE_FIELD: taskSize.toString() + TASK_CONTENT,
-      };
-
-      // Added last task
-      _refLastTask.child(formattedMonth).child(taskId).set(lastTask);
-      _refLastTask
-          .child(formattedMonth)
-          .child(taskId)
-          .child(SORT_FIELD)
-          .set(sort);
-
-      // Update technician name
-      _refTaskUpdate.child(TECHNICIAN_NAME_FIELD).set(userName);
-      _refTaskUpdate.child(SORT_FIELD).set(sort);
-    });
-
-    _refTasks.child(formattedMonth).once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        monthSize += value.length;
-      });
-      Map<String, String> month = {
-        MONTH_FIELD: formattedMonth,
-        TASK_SIZE_FIELD: monthSize.toString() + TASK_CONTENT,
-        SORT_FIELD: sort.toString(),
-      };
-      if (_imageMachine != null) {
-        _uploadFile(
-            subTaskId, _imageMachine, IMAGE_MACHINE_FIELD, _refTaskUpdate);
-      }
-      if (_imageSignature != null) {
-        _uploadFile(
-            subTaskId, _imageSignature, IMAGE_SIGNATURE_FIELD, _refTaskUpdate);
-      }
-      String personalContent = [formattedMonth, taskId, subTaskId].join(SLASH);
-      Map<String, String> personalInfo = {
-        PERSONAL_INFO_FIREBASE: personalContent,
-      };
-
-      _refPersonal.child(userId).child(subTaskId).set(personalInfo);
-
-      Toast.show(ADD_CONFIRM, context,
-          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
-
-      String inputCode =
-          QR_MATCH_CODE + SLASH + formattedMonth + SLASH + taskId;
-
-      _generateBarCode(taskId, inputCode);
-
-      // ImageGallerySaver.saveImage(this.bytes);
-
-      // Added month
-      _refMonth.child(formattedMonth).set(month);
-      _refMonth.child(formattedMonth).child(SORT_FIELD).set(sort).then((value) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) {
-            return MainScreen(
-              userId: userId,
-            );
-          }),
-        );
-      });
-    });
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => MainScreen(
+                  userId: userId,
+                )),
+        (Route<dynamic> route) => false);
   }
 
-  Future _generateBarCode(String taskId, String inputCode) async {
-    Uint8List result = await scanner.generateBarCode(inputCode);
-    final directory = await getExternalStorageDirectory(); // 1
-    final pathOfTheFileToWrite = directory.path + "/$taskId.png";
-    File file = File(pathOfTheFileToWrite);
-    file.writeAsBytes(result);
+  _getDirectory() async {
+    final temp = await getExternalStorageDirectory();
+    return temp.path;
+  }
+
+  Future<void> _captureAndSharePng(String taskId) async {
+    try {
+      RenderRepaintBoundary boundary =
+          globalKey.currentContext.findRenderObject();
+      var image = await boundary.toImage();
+      ByteData byteData = await image.toByteData(format: ImageByteFormat.png);
+      Uint8List pngBytes = byteData.buffer.asUint8List();
+
+      final directory = await getExternalStorageDirectory();
+      print(directory.path);
+      final file = await new File('${directory.path}/QR-$taskId.png').create();
+      await file.writeAsBytes(pngBytes);
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }

@@ -1,21 +1,22 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qr_scan/Constants/MessageConstants.dart';
 import 'package:flutter_qr_scan/Constants/constants.dart';
-import 'package:flutter_qr_scan/Models/AllTaskInfo.dart';
-import 'package:flutter_qr_scan/Screens/Auth/Login/login_screen.dart';
 import 'package:flutter_qr_scan/Screens/Main/MonthTask.dart';
 import 'package:flutter_qr_scan/Screens/QrScan/ScanMain.dart';
 import 'package:flutter_qr_scan/Utils/Util.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:toast/toast.dart';
+
+import '../../Constants/constants.dart';
 
 class AllTask extends StatefulWidget {
   final String title;
@@ -32,57 +33,75 @@ class AllTask extends StatefulWidget {
 }
 
 class _AllTaskState extends State<AllTask> {
-  Query _ref;
-
-  int present = 0;
-  int perPage = 15;
-  int returnMaxNum = 0;
-
-  List allTasks = [];
-  List itemCurrentPages = [];
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  List<DocumentSnapshot> months = [];
+  List<DocumentSnapshot> exportTasks = [];
+  bool isLoading = false;
+  bool hasMore = true;
+  int monthLimit = 20;
+  DocumentSnapshot lastMonth;
+  static ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     Util.checkUser(widget.userId, context);
-    _ref = FirebaseDatabase.instance.reference().child(MONTH_FIREBASE);
-    initialValue();
+    _scrollController = ScrollController();
+    getMonths();
+
+    _scrollController.addListener(() {
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double currentScroll = _scrollController.position.pixels;
+      double delta = MediaQuery.of(context).size.height * 0.20;
+      if (maxScroll - currentScroll <= delta) {
+        getMonths();
+      }
+    });
   }
 
-  Future<void> initialValue() async {
-    Query _refExcu = _ref.orderByChild('sort');
-    await _refExcu.once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        AllTaskInfo allTaskInfo = new AllTaskInfo();
-        allTaskInfo.all_month = value['month'].toString();
-        allTaskInfo.task_size = value['taskSize'].toString();
-        allTasks.add(allTaskInfo);
+  getMonths() async {
+    if (!hasMore) {
+      print('No More Months');
+      return;
+    }
+
+    if (isLoading) {
+      return;
+    }
+    setState(() {
+      isLoading = true;
+    });
+    QuerySnapshot querySnapshot;
+    if (lastMonth == null) {
+      querySnapshot = await firestore
+          .collection('Months')
+          .orderBy('updated_at')
+          .limit(monthLimit)
+          .get();
+    } else {
+      querySnapshot = await firestore
+          .collection('Months')
+          .orderBy('updated_at')
+          .startAfterDocument(lastMonth)
+          .limit(monthLimit)
+          .get();
+      print(1);
+    }
+    if (querySnapshot.docs.length == 0) {
+      hasMore = false;
+      setState(() {
+        isLoading = false;
       });
-    });
+      return;
+    }
 
+    if (querySnapshot.docs.length < monthLimit) {
+      hasMore = false;
+    }
+    lastMonth = querySnapshot.docs[querySnapshot.docs.length - 1];
+    months.addAll(querySnapshot.docs);
     setState(() {
-      allTasks.sort((a, b) => b.all_month.compareTo(a.all_month));
-      if ((present + perPage) > allTasks.length) {
-        itemCurrentPages.addAll(allTasks.getRange(present, allTasks.length));
-        present = allTasks.length;
-      } else {
-        itemCurrentPages.addAll(allTasks.getRange(present, present + perPage));
-        present = present + perPage;
-      }
-    });
-  }
-
-  void loadMore() {
-    Util.checkUser(widget.userId, context);
-    setState(() {
-      if ((present + perPage) > allTasks.length) {
-        itemCurrentPages.addAll(allTasks.getRange(present, allTasks.length));
-        present = allTasks.length;
-      } else {
-        itemCurrentPages.addAll(allTasks.getRange(present, present + perPage));
-        present = present + perPage;
-      }
+      isLoading = false;
     });
   }
 
@@ -92,6 +111,7 @@ class _AllTaskState extends State<AllTask> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: kPrimaryColor,
+          centerTitle: true,
           title: Center(
               child: Text(
             "All Task",
@@ -123,106 +143,171 @@ class _AllTaskState extends State<AllTask> {
           elevation: 50.0,
           brightness: Brightness.dark,
         ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification scrollInfo) {
-            if (scrollInfo.metrics.pixels ==
-                scrollInfo.metrics.maxScrollExtent) {
-              loadMore();
-            }
-          },
-          child: ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: (present <= allTasks.length)
-                  ? itemCurrentPages.length + 1
-                  : itemCurrentPages.length,
-              itemBuilder: (context, index) {
-                return (index == itemCurrentPages.length)
-                    ? Container(
-                        color: Colors.greenAccent,
-                        child: FlatButton(
-                          child: Text("Load More"),
-                          onPressed: () {
-                            loadMore();
-                          },
-                        ),
-                      )
-                    : _buildMonthInfoItem(
-                        allTaskInfo: itemCurrentPages[index], userId: userId);
-              }),
-        ));
+        body: SafeArea(
+            child: Column(children: [
+          Expanded(
+            child: months.length == 0
+                ? Center(
+                    child: Text('No Data...'),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: months.length,
+                    itemBuilder: (context, index) {
+                      return _buildMonthInfoItem(
+                          month: months[index], userId: userId);
+                    }),
+          ),
+          isLoading
+              ? Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(5),
+                  child: Text(
+                    'Loading...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                )
+              : Container()
+        ])));
   }
 
-  Widget _buildMonthInfoItem({AllTaskInfo allTaskInfo, String userId}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.all(10),
-      height: 70,
-      color: Colors.white,
-      child: Row(children: [
-        Icon(
-          Icons.assignment_outlined,
-          color: kPrimaryColor,
-          size: 40,
-        ),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildMonthInfoItem({DocumentSnapshot month, String userId}) {
+    final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm:ss');
+    return GestureDetector(
+        onTap: () => _monthTask(month.get("name"), userId),
+        child: Container(
+          margin: EdgeInsets.only(top: 5, bottom: 15, left: 12, right: 12),
+          padding: EdgeInsets.all(10),
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                  offset: Offset(7, 7),
+                  blurRadius: 9,
+                  color: kPrimaryColor.withOpacity(0.2),
+                  spreadRadius: 3),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Row(
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 10,
-                  ),
-                  SelectableText(
-                    allTaskInfo.all_month,
-                    onTap: () => _monthTask(allTaskInfo.all_month, userId),
+                  Text(
+                    month.get("name"),
                     style: TextStyle(
-                        fontSize: 18,
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 17),
                   ),
-                ],
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Row(
-                children: [
                   SizedBox(
-                    width: 10,
+                    height: 5,
                   ),
                   Text(
-                    allTaskInfo.task_size,
+                    month.get("tasks").toString(),
                     style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.pink,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15),
                   ),
                 ],
+              ),
+              Container(
+                child: Column(children: getTextWidgets(8)),
+                height: 100,
+                // color: Colors.grey.withOpacity(0.5),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    // width: MediaQuery.of(context).size.width - 250,
+                    child: Text(
+                      "Time: " + month.get("name"),
+                      style: TextStyle(color: Colors.black),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.av_timer,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                      Container(
+                        // width: MediaQuery.of(context).size.width - 160,
+                        child: Text(
+                          "Last time: " +
+                              formatter
+                                  .format(month.get("updated_at").toDate())
+                                  .toString(),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.app_registration,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                      Text(
+                        "Tasks: " + month.get("tasks").toString(),
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+              Builder(
+                builder: (BuildContext context) {
+                  return IconButton(
+                    icon: Icon(
+                      Icons.download_rounded,
+                      color: Colors.red[500],
+                      size: 40,
+                    ),
+                    onPressed: () {
+                      Util.checkUser(widget.userId, context);
+                      _showMaterialDialog(month.get("name"));
+                    },
+                    tooltip: "Back",
+                  );
+                },
               ),
             ],
           ),
+        ));
+  }
+
+  List<Widget> getTextWidgets(int len) {
+    List<Widget> list = [];
+    for (var i = 0; i < len; i++) {
+      list.add(new Container(
+        height: 5,
+        width: 5,
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(100),
         ),
-        /*3*/
-        Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: Icon(
-                Icons.download_rounded,
-                color: Colors.red[500],
-                size: 40,
-              ),
-              onPressed: () {
-                Util.checkUser(widget.userId, context);
-                _showMaterialDialog(allTaskInfo.all_month);
-              },
-              tooltip: "Back",
-            );
-          },
-        ),
-      ]),
-    );
+      ));
+      list.add(new SizedBox(
+        height: 5,
+      ));
+    }
+    return list;
   }
 
   _showMaterialDialog(String month) {
@@ -232,22 +317,22 @@ class _AllTaskState extends State<AllTask> {
               title: Text(EXPORT_CONFIRM),
               content: Text(EXPORT_CONTENT),
               actions: [
-                FlatButton(
-                  textColor: kPrimaryColor,
+                TextButton(
                   onPressed: () {
                     Util.checkUser(widget.userId, context);
                     Navigator.pop(context);
                   },
-                  child: Text(BUTTON_CANCEL_TEXT),
+                  child: Text(BUTTON_CANCEL_TEXT,
+                      style: const TextStyle(color: kPrimaryColor)),
                 ),
-                FlatButton(
-                  textColor: kPrimaryColor,
+                TextButton(
                   onPressed: () {
                     Util.checkUser(widget.userId, context);
                     _exportToCsv(month);
                     Navigator.pop(context);
                   },
-                  child: Text(BUTTON_ACCEPT_TEXT),
+                  child: Text(BUTTON_ACCEPT_TEXT,
+                      style: const TextStyle(color: kPrimaryColor)),
                 ),
               ],
             ));
@@ -265,57 +350,86 @@ class _AllTaskState extends State<AllTask> {
     );
   }
 
+  Future<void> addUser() {
+    CollectionReference months =
+        FirebaseFirestore.instance.collection('Months');
+    for (var i = 100; i >= 1; i--) {
+      months
+          .doc('2022-' + i.toString())
+          .set({
+            'name': '2022-' + i.toString(),
+            'tasks': i,
+            'updated_at': DateTime.now()
+          })
+          .then((value) => print("Month Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    }
+  }
+
   void _exportToCsv(String month) async {
     log('month: $month');
     String header =
         "Technician Name,Task ID,Task Name,Place,Lab Name,Description,Type,Work Status,Over Time,Machine Image,Signature Image,Date\n";
-    List<String> csvDataList = List<String>();
+    List<String> csvDataList = [];
     csvDataList.add(header);
-    DatabaseReference _ref =
-        FirebaseDatabase.instance.reference().child(TASK_FIREBASE).child(month);
     final directory = await getExternalStorageDirectory();
+    var splitMonth = month.split("-");
+    var monAfter = int.parse(splitMonth[1]) + 1;
 
-    _ref.once().then((DataSnapshot snapshot) {
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key, value) {
-        value.forEach((k, v) {
-          String date = v[DATE_FIELD];
-          String workStatus = v[WORK_STATUS_FIELD];
-          String technicianName = v[TECHNICIAN_NAME_FIELD];
-          String overTime = v[OVER_TIME_FIELD];
-          String description = v[DESCRIPTION_FIELD];
-          String labName = v[LAB_NAME_FIELD];
-          String place = v[PLACE_FIELD];
-          String type = v[TYPE_FIELD];
-          String taskId = v[TASK_ID_FIELD];
-          String taskName = v[TASK_NAME_FIELD];
-          String machineImage = v[MACHINE_IMAGE_FIELD];
-          String signatureImage = v[SIGNATURE_IMAGE_FIELD];
+    var extTime = "-00 00:00:00";
+    var lessThan = [
+          splitMonth[0],
+          monAfter.toString().length == 1
+              ? "0" + monAfter.toString()
+              : monAfter.toString()
+        ].join("-") +
+        extTime;
 
-          String record = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", [
-            technicianName,
-            taskId,
-            taskName,
-            place,
-            labName,
-            description,
-            type,
-            workStatus,
-            overTime,
-            machineImage,
-            signatureImage,
-            date
-          ]);
-          csvDataList.add(record);
-        });
-      });
+    QuerySnapshot querySnapshot;
+    querySnapshot = await firestore
+        .collection('Tasks')
+        .where('updated_at', isGreaterThan: DateTime.parse(month + extTime))
+        .where('updated_at', isLessThan: DateTime.parse(lessThan))
+        .orderBy('updated_at')
+        .get();
+    final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm:ss');
+    querySnapshot.docs.forEach((doc) {
+      String date = formatter.format(doc.get(DATE_FIELD).toDate()).toString();
+      String workStatus = doc.get(WORK_STATUS_FIELD);
+      String technicianName = doc.get(TECHNICIAN_NAME_FIELD);
+      String overTime = doc.get(OVER_TIME_FIELD);
+      String description = doc.get(DESCRIPTION_FIELD);
+      String labName = doc.get(LAB_NAME_FIELD);
+      String place = doc.get(PLACE_FIELD);
+      String type = doc.get(TYPE_FIELD);
+      String taskId = doc.get(TASK_ID_FIELD);
+      String taskName = doc.get(TASK_NAME_FIELD);
+      String machineImage = doc.get(MACHINE_IMAGE_FIELD);
+      String signatureImage = doc.get(SIGNATURE_IMAGE_FIELD);
 
-      /// Write to a file
-      final pathOfTheFileToWrite = directory.path + "/$month.csv";
-      File file = File(pathOfTheFileToWrite);
-      file.writeAsString(csvDataList.join(''));
+      String record = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", [
+        technicianName,
+        taskId,
+        taskName,
+        place,
+        labName,
+        description,
+        type,
+        workStatus,
+        overTime,
+        machineImage,
+        signatureImage,
+        date
+      ]);
+      csvDataList.add(record);
     });
-    Toast.show("Exported to CSV!", context,
+
+    /// Write to a file
+    final pathOfTheFileToWrite = directory.path + "/$month.csv";
+    File file = File(pathOfTheFileToWrite);
+    file.writeAsString(csvDataList.join(''));
+
+    Toast.show("Exported to CSV failed!", context,
         duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
   }
 
