@@ -81,7 +81,7 @@ class _AddTaskState extends State<AddTask> {
     epochTime = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
     taskId = int.parse(epochTime).toString();
     getUserName(widget.userId);
-    direc = _getDirectory();
+    _getDirectory();
   }
 
   _imgFromCamera(int type) async {
@@ -382,7 +382,17 @@ class _AddTaskState extends State<AddTask> {
               SizedBox(
                 height: 5,
               ),
-              Text(direc),
+              direc != null
+                  ? Text(
+                      direc,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                        decoration: TextDecoration.none,
+                      ),
+                    )
+                  : Container(),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: RoundedButton(
@@ -494,9 +504,11 @@ class _AddTaskState extends State<AddTask> {
         (Route<dynamic> route) => false);
   }
 
-  _getDirectory() async {
+  Future<void> _getDirectory() async {
     final temp = await getExternalStorageDirectory();
-    return temp.path;
+    setState(() {
+      direc = temp.path;
+    });
   }
 
   Future<void> _captureAndSharePng(String taskId) async {
