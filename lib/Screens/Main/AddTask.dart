@@ -379,6 +379,8 @@ class _AddTaskState extends State<AddTask> {
                   child: QrImage(
                     data: QR_MATCH_CODE + SLASH + taskId,
                     size: 0.3 * bodyHeight,
+                    backgroundColor: Colors.white,
+                    embeddedImage: AssetImage('assets/images/embeded_icon.png'),
                   ),
                 ),
               ),
